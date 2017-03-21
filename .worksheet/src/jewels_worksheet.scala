@@ -1,5 +1,10 @@
-object jewels_worksheet {
-  import util.Random;import org.scalaide.worksheet.runtime.library.WorksheetSupport._; def main(args: Array[String])=$execute{;$skip(319); 
+object jewels_worksheet extends App {
+  import util.Random;import org.scalaide.worksheet.runtime.library.WorksheetSupport._; def main(args: Array[String])=$execute{;$skip(201); 
+  
+  //Imprime cualquier lista o variable valida para for each
+  def printList(args: TraversableOnce[_]): Unit = {
+  	args.foreach(println)
+	};System.out.println("""printList: (args: TraversableOnce[_])Unit""");$skip(273); 
   
   //Función para introducir un numero en una posicion determinada
 	def introducirElemento(color:Int, pos:Int, tablero:List[Int]):List[Int] =
@@ -122,14 +127,19 @@ object jewels_worksheet {
 			case 4=> { swap(tablero, pos1_x + pos1_y*anchura, pos1_x+1 + (pos1_y)*anchura, tablero(pos1_x + pos1_y*anchura))
 								analisisManual(tablero, dificultad,anchura, altura, pos1_x+1, pos1_y, tablero(pos1_x + pos1_y*anchura)) }
 		}
-	};System.out.println("""intercambiarJewels: (tablero: List[Int], pos1_x: Int, pos1_y: Int, direccion: Int, anchura: Int, altura: Int, seleccion: Int)List[Int]""");$skip(21); 
+	};System.out.println("""intercambiarJewels: (tablero: List[Int], pos1_x: Int, pos1_y: Int, direccion: Int, anchura: Int, altura: Int, seleccion: Int)List[Int]""");$skip(36); 
+	
+	println("Anchura del tablero: ");$skip(38); 
+	val anchura=scala.io.StdIn.readInt();System.out.println("""anchura  : Int = """ + $show(anchura ));$skip(35); 
+	
+	println("Altura del tablero: ");$skip(37); 
+	val altura=scala.io.StdIn.readInt();System.out.println("""altura  : Int = """ + $show(altura ));$skip(39); 
   
-	val anchura = 15;System.out.println("""anchura  : Int = """ + $show(anchura ));$skip(17); 
-	val altura = 11;System.out.println("""altura  : Int = """ + $show(altura ));$skip(20); 
-	val dificultad = 3;System.out.println("""dificultad  : Int = """ + $show(dificultad ));$skip(84); 
+	println("Dificultad (1, 2 o 3): ");$skip(41); 
+	val dificultad=scala.io.StdIn.readInt();System.out.println("""dificultad  : Int = """ + $show(dificultad ));$skip(84); 
 	
 	//Se inicializa el tablero
-	val tablero = initTablero(anchura*altura,dificultad);System.out.println("""tablero  : List[Int] = """ + $show(tablero ));$skip(80); val res$0 = 
+	val tablero = initTablero(anchura*altura,dificultad);System.out.println("""tablero  : List[Int] = """ + $show(tablero ));$skip(91); 
 	
-	analisisManual(tablero,dificultad,anchura,altura,5,7,tablero(5 + 7*anchura));System.out.println("""res0: List[Int] = """ + $show(res$0))}
+	printList(analisisManual(tablero,dificultad,anchura,altura,5,7,tablero(5 + 7*anchura)))}
 }
