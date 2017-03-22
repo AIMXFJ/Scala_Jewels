@@ -174,7 +174,7 @@ object jewels extends App {
 	}
 	
 	//Funcion que se ocupa de intercambiar con la jewel indicada y realizar llamar al analisis manual
-	def intercambiarJewels(tablero:List[Int], pos1_x:Int, pos1_y:Int, direccion:Int, anchura:Int, altura:Int, seleccion:Int):List[Int] = {
+	def intercambiarJewels(tablero:List[Int], pos1_x:Int, pos1_y:Int, direccion:Int, anchura:Int, altura:Int):List[Int] = {
 		direccion match {
 		//analisisManual recibe como tablero el resultante del swap
 		//Arriba, si no se sale del tablero lo hace
@@ -215,11 +215,34 @@ object jewels extends App {
 	      aux
 	}
 	
+	//Optiene el mejor movimiento y lo ejecuta
+	def analizarMejorOpcion(aux:List[Int], x:Int, y:Int, x_mejor:Int, y_mejor:Int, valor_mejor:Int, tablero:List[Int], anchura:Int, altura:Int):List[Int] = {
+	  //Se busca la mejor opcion
+	  if(x+y*anchura < altura*anchura) {
+  	  if(x < anchura-1){
+    	  if(aux(x+y*anchura)>=2 && aux(x+y*anchura) > valor_mejor){
+    	    analizarMejorOpcion(aux, x+1, y, x, y, aux(x+y*anchura),tablero,anchura,altura)
+	      }else{
+	        analizarMejorOpcion(aux, x+1, y, x_mejor, y_mejor, valor_mejor,tablero,anchura,altura)
+	      }
+  	  }else{
+  	    if(aux(x+y*anchura)>=2 && aux(x+y*anchura) > valor_mejor){
+    	    analizarMejorOpcion(aux, 0, y+1, x, y, aux(x+y*anchura),tablero,anchura,altura)
+	      }else{
+	        analizarMejorOpcion(aux, 0, y+1, x_mejor, y_mejor, valor_mejor,tablero,anchura,altura)
+	      }
+  	  }
+	  }else{
+	    //Ya se ha obtenido la mejor opcion
+	     intercambiarJewels(tablero, x_mejor, y_mejor, 4, anchura, altura)
+	  }
+	}
+	
 	//Busca el mejor movimiento hacia la derecha empleando una estructura auxiliar para guardar cuantas jewels se eliminarian
 	def analisisAutomatico(tablero:List[Int], dificultad:Int,anchura:Int, altura:Int):List[Int] = {
 	  val aux = initTableroAux(anchura*altura)
-	  printTablero(analisisAutomaticoRec(tablero, aux, dificultad, anchura, altura, 0, 0),0,altura-1,anchura,altura)
-	  aux
+	  //printTablero(analisisAutomaticoRec(tablero, aux, dificultad, anchura, altura, 0, 0),0,altura-1,anchura,altura)
+	  analizarMejorOpcion(analisisAutomaticoRec(tablero, aux, dificultad, anchura, altura, 0, 0), 0, 0, 0, 0, 0, tablero, anchura, altura)
 	}
 	
 	def bucleJuego(tablero:List[Int], anchura:Int, altura:Int, dificultad:Int, seleccion:Int, jugando:Boolean):Unit = {
@@ -231,32 +254,124 @@ object jewels extends App {
 	  
 	  seleccion match {
 	    case 1 => {
+	      println("Elige una acción:\n   1.-Mejor Jugada\n   2.-Guardar Partida\n   3.-Cargar Partida\n   9.-Usar una Bomba\n   0.-Salir")
+	      val opcionElegida = scala.io.StdIn.readInt()
+	      
+	      //Opciones 2, 3 y 9 no hacen nada de momento, solo continuan el bucle del juego, 0 sale del programa
+	      opcionElegida match {
+	        case 0 => System.exit(1)
+	        case 1 => bucleJuego(analisisAutomatico(tablero, dificultad, anchura, altura),anchura,altura,dificultad,seleccion,jugando)
+	        case 2 => {bucleJuego(tablero,anchura,altura,dificultad,seleccion,jugando)}
+	        case 3 => {bucleJuego(tablero,anchura,altura,dificultad,seleccion,jugando)}
+	        case 9 => {bucleJuego(tablero,anchura,altura,dificultad,seleccion,jugando)}
+	        case _ => bucleJuego(tablero,anchura,altura,dificultad,seleccion,jugando)
+	      }
 	      //bucleJuego(analisisAutomatico(tablero, dificultad, anchura, altura),anchura,altura,dificultad,seleccion,jugando)
-	      analisisAutomatico(tablero, dificultad, anchura, altura)
+	      //analisisAutomatico(tablero, dificultad, anchura, altura)
 	      //bucleJuego(tablero,anchura,altura,dificultad,seleccion,jugando)
 	    }
 	    case 2 => {
-	      println("Seleccione la jewel a intercambiar")
+	      println("Elige una acción:\n   1.-Intercambiar Jewel\n   2.-Guardar Partida\n   3.-Cargar Partida\n   9.-Usar una Bomba\n   0.-Salir")
+	      val opcionElegida = scala.io.StdIn.readInt()
 	      
-	      println("X->")
-	      val x=scala.io.StdIn.readInt()
+	      //Opciones 2, 3 y 9 no hacen nada de momento, solo continuan el bucle del juego, 0 sale del programa
+	      opcionElegida match {
+	        case 0 => System.exit(1)
+	        case 1 => {  //Intercambio de la jewel a elegir
+	          println("Seleccione la jewel a intercambiar")
 	      
-	      println("Y->")
-	      val y=scala.io.StdIn.readInt()
-	      
-	      println("Direccion del intercambio:\n   1.-Arriba\n   2.-Abajo\n   3.-Izquierda\n   4.-Derecha")
-	      val direccion=scala.io.StdIn.readInt()
-	      
-	      if(direccion < 1 && direccion > 4){
-	        println("¡DIRECCION ERRONEA!")
-	        bucleJuego(tablero,anchura,altura,dificultad,seleccion,jugando)
+    	      println("X->")
+    	      val x=scala.io.StdIn.readInt()
+    	      
+    	      println("Y->")
+    	      val y=scala.io.StdIn.readInt()
+    	      
+    	      println("Direccion del intercambio:\n   1.-Arriba\n   2.-Abajo\n   3.-Izquierda\n   4.-Derecha")
+    	      val direccion=scala.io.StdIn.readInt()
+    	      
+    	      if(direccion < 1 && direccion > 4){
+    	        println("¡DIRECCION ERRONEA!")
+    	        bucleJuego(tablero,anchura,altura,dificultad,seleccion,jugando)
+    	      }
+    	      
+    	      bucleJuego(intercambiarJewels(tablero, x, y, direccion, anchura, altura),anchura,altura,dificultad,seleccion,jugando)
+	        }
+	        case 2 => {
+	          bucleJuego(tablero,anchura,altura,dificultad,seleccion,jugando)
+	        }
+	        case 3 => {
+	          bucleJuego(tablero,anchura,altura,dificultad,seleccion,jugando)
+	        }
+	        case 9 => {
+	          //Control de UI de las bombas dependiendo de la dificultad
+	          dificultad match {
+	            case 1 => {
+	              println("Elige una bomba:\n   1.Fila\n   0.-Cancelar")
+	              val bomba = scala.io.StdIn.readInt()
+	              bomba match {
+	                case 1 => {
+	                  //Bomba fila
+	                }
+	                case 0 => {
+	                  //Cancelar operacion
+    	              bucleJuego(tablero,anchura,altura,dificultad,seleccion,jugando)
+    	            }
+	                case _ => bucleJuego(tablero,anchura,altura,dificultad,seleccion,jugando)
+	              }
+	              bucleJuego(tablero,anchura,altura,dificultad,seleccion,jugando)
+	            }
+	            case 2 => {
+	              println("Elige una bomba:\n   1.Fila\n   2.-Columna\n   0.-Cancelar")
+	              val bomba = scala.io.StdIn.readInt()
+	              bomba match {
+	                case 1 => {
+	                  //Bomba fila
+	                }
+	                case 2 => {
+	                  //Bomba columna
+	                }
+	                case 0 => {
+	                  //Cancelar operacion
+    	              bucleJuego(tablero,anchura,altura,dificultad,seleccion,jugando)
+    	            }
+	                case _ => bucleJuego(tablero,anchura,altura,dificultad,seleccion,jugando)
+	              }
+	              bucleJuego(tablero,anchura,altura,dificultad,seleccion,jugando)
+	            }
+	            case 3 => {
+	              println("Elige una bomba:\n   1.Fila\n   2.-Columna\n   3.-Rotar Jewels\n   0.-Cancelar")
+	              val bomba = scala.io.StdIn.readInt()
+	              bomba match {
+	                case 1 => {
+	                  //Bomba fila
+	                }
+	                case 2 => {
+	                  //Bomba columna
+	                }
+	                case 3 => {
+	                  //Bomba rotar jewels
+	                }
+	                case 0 => {
+	                  //Cancelar operacion
+    	              bucleJuego(tablero,anchura,altura,dificultad,seleccion,jugando)
+    	            }
+	                case _ => bucleJuego(tablero,anchura,altura,dificultad,seleccion,jugando)
+	              }
+	              bucleJuego(tablero,anchura,altura,dificultad,seleccion,jugando)
+	            }
+	            case _ => bucleJuego(tablero,anchura,altura,dificultad,seleccion,jugando)
+	          }
+	          
+	          //Por si acaso
+	          bucleJuego(tablero,anchura,altura,dificultad,seleccion,jugando)
+	        }
+	        case _ => bucleJuego(tablero,anchura,altura,dificultad,seleccion,jugando)
 	      }
-	      
-	      bucleJuego(intercambiarJewels(tablero, x, y, direccion, anchura, altura, seleccion),anchura,altura,dificultad,seleccion,jugando)
 	    }
 	  }
 	  
-	  //bucleJuego(tablero,anchura,altura,dificultad,seleccion,jugando)
+	  //Por si acaso
+	  bucleJuego(tablero,anchura,altura,dificultad,seleccion,jugando)
 	}
 	
 	println("Anchura del tablero: ")
