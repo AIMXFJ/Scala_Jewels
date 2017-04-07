@@ -23,4 +23,18 @@ object test {
 	}                                         //> longitudLista: (lista: List[Int])Int
 	
 	longitudLista(list)                       //> res1: Int = 5
+	
+	List.range(0, 5).foreach(i => println(i)) //> 0
+                                                  //| 1
+                                                  //| 2
+                                                  //| 3
+                                                  //| 4
+	
+	if(true)
+		list ::: 16 :: Nil ::: 55 :: Nil  //> res2: Any = List(1, 2, 3, 4, 5, 16, 55)
+		
+	val list1 = List(1,2)                     //> list1  : List[Int] = List(1, 2)
+	
+	list1 ::: Nil ::: Nil ::: 1 :: Nil ::: 2 :: Nil
+                                                  //> res3: List[Int] = List(1, 2, 1, 2)
 }

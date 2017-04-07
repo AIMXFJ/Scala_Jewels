@@ -29,4 +29,15 @@ object test {
                                                   //| 2
                                                   //| 3
                                                   //| 4
+	
+	if(true)
+		list ::: 16 :: Nil ::: 55 :: Nil  //> res2: Any = List(1, 2, 3, 4, 5, 16, 55)
+		
+	val list1 = List(1,2)                     //> list1  : List[Int] = List(1, 2)
+	val list_copy = list                      //> list_copy  : List[Int] = List(1, 2, 3, 4, 5)
+	list_copy ::: 56 :: Nil                   //> res3: List[Int] = List(1, 2, 3, 4, 5, 56)
+	list ::: -56 :: Nil                       //> res4: List[Int] = List(1, 2, 3, 4, 5, -56)
+	
+	list1 ::: Nil ::: Nil ::: 1 :: Nil ::: 2 :: Nil
+                                                  //> res5: List[Int] = List(1, 2, 1, 2)
 }

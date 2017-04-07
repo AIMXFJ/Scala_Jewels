@@ -19,5 +19,15 @@ object test {;import org.scalaide.worksheet.runtime.library.WorksheetSupport._; 
 	
 	longitudLista(list);System.out.println("""res1: Int = """ + $show(res$1));$skip(45); 
 	
-	List.range(0, 5).foreach(i => println(i))}
+	List.range(0, 5).foreach(i => println(i));$skip(47); val res$2 = 
+	
+	if(true)
+		list ::: 16 :: Nil ::: 55 :: Nil;System.out.println("""res2: Any = """ + $show(res$2));$skip(26); 
+		
+	val list1 = List(1,2);System.out.println("""list1  : List[Int] = """ + $show(list1 ));$skip(22); 
+	val list_copy = list;System.out.println("""list_copy  : List[Int] = """ + $show(list_copy ));$skip(25); val res$3 = 
+	list_copy ::: 56 :: Nil;System.out.println("""res3: List[Int] = """ + $show(res$3));$skip(21); val res$4 = 
+	list ::: -56 :: Nil;System.out.println("""res4: List[Int] = """ + $show(res$4));$skip(51); val res$5 = 
+	
+	list1 ::: Nil ::: Nil ::: 1 :: Nil ::: 2 :: Nil;System.out.println("""res5: List[Int] = """ + $show(res$5))}
 }
