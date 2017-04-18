@@ -138,68 +138,146 @@ object TableroGrafico extends SimpleSwingApplication {
 		else Nil
 	}
 	
-	//Analiza si hay jewels para eliminar y devuelve cuales en caso de que se pueda eliminar
-	def analizarPosicion(tablero:List[Int],anchura:Int,altura:Int,x:Int,y:Int):List[Int] = {
-		if(cuantasJewelsDerecha(tablero,anchura,altura,x,y,tablero(x+y*anchura),0) + 1 + cuantasJewelsIzquierda(tablero,anchura,altura,x,y,tablero(x+y*anchura),0) >= 3){
-			llenarJewelsEliminarHorizontal(tablero,anchura,x,y,cuantasJewelsDerecha(tablero,anchura,altura,x,y,tablero(x+y*anchura),0),cuantasJewelsIzquierda(tablero,anchura,altura,x,y,tablero(x+y*anchura),0),false)
-		}else if(cuantasJewelsArriba(tablero,anchura,altura,x,y,tablero(x+y*anchura),0) + 1 + cuantasJewelsAbajo(tablero,anchura,altura,x,y,tablero(x+y*anchura),0) >= 3){
-			println("VERTICAL")
-		  llenarJewelsEliminarVertical(tablero,anchura,x,y,cuantasJewelsArriba(tablero,anchura,altura,x,y,tablero(x+y*anchura),0),cuantasJewelsAbajo(tablero,anchura,altura,x,y,tablero(x+y*anchura),0),false)
-		}else Nil
+	def analizarPosicion(tablero:List[Int], pisados:List[Int],anchura:Int,altura:Int,x:Int,y:Int,x_ant:Int,y_ant:Int,valor:Int):(List[Int],List[Int]) = {
+	  //println("Analizar pos: " + x + " " + y + " ant: " + x_ant + " " + y_ant + " valor: " + valor)
+	  //if(x>=0 && y >=0 && y<altura && x<anchura)
+	  //println("Valor de la posicion: " + tablero(x+y*anchura))
+	  //printTablero(tablero,0,altura-1,anchura,altura)
+	  //println("Pisados:")
+	  //printTableroAux(pisados,0,altura-1,anchura,altura)
+	  if((x != x_ant || y != y_ant) && x>=0 && y>=0 && x<anchura && y < altura && x+y*anchura < anchura * altura && x+y*anchura >= 0 && pisados(x+y*anchura) == 1 && tablero(x+y*anchura) == valor){
+	    if(x_ant == -50 && y_ant == -50){ //Inicial
+	      //println("Inicial, " + x + " " + y)
+	      val derecha = analizarPosicion(tablero,introducirElemento(0,x+y*anchura,pisados),anchura,altura,x+1,y,x,y,valor)
+	      //printTableroAux(derecha._2,0,altura-1,anchura,altura)
+  	    val izquierda = analizarPosicion(tablero,derecha._2,anchura,altura,x-1,y,x,y,valor)
+  	    //printTableroAux(izquierda._2,0,altura-1,anchura,altura)
+  	    val arriba = analizarPosicion(tablero,izquierda._2,anchura,altura,x,y+1,x,y,valor)
+  	    //printTableroAux(arriba._2,0,altura-1,anchura,altura)
+  	    val abajo = analizarPosicion(tablero,arriba._2,anchura,altura,x,y-1,x,y,valor)
+  	    //printTableroAux(abajo._2,0,altura-1,anchura,altura)
+  	    
+  	    //println("!!!!!!derecha: " + derecha._1.size + " izq: " + izquierda._1.size + " arr: " + arriba._1.size + " debaj: " + abajo._1.size)
+  	    
+  	    if(derecha._1.size + izquierda._1.size >= 2){
+  	      val list = derecha._1 ::: izquierda._1 ::: arriba._1 ::: abajo._1 ::: x :: Nil ::: y :: Nil
+  	      //println("Inicio (" + x +","+y+")" + " Resultado: " + list)
+  	      return (list, abajo._2)
+  	    }
+  	    if(arriba._1.size + abajo._1.size >= 2){
+  	      val list = derecha._1 ::: izquierda._1 ::: arriba._1 ::: abajo._1 ::: x :: Nil ::: y :: Nil
+  	      //println("Inicio (" + x +","+y+")" + " Resultado: " + list)
+  	      return (list,abajo._2)
+  	    }
+  	    //println("Sin resultado")
+  	    return (Nil,abajo._2)
+	    }
+	    if(x - x_ant > 0){ //Poda Izquierda
+	      val derecha = analizarPosicion(tablero,introducirElemento(0,x+y*anchura,pisados),anchura,altura,x+1,y,x,y,valor)
+  	    val izquierda = Nil
+  	    val arriba = analizarPosicion(tablero,derecha._2,anchura,altura,x,y+1,x,y,valor)
+  	    val abajo = analizarPosicion(tablero,arriba._2,anchura,altura,x,y-1,x,y,valor)
+  	    //printList(derecha ::: izquierda ::: arriba ::: abajo ::: x :: Nil ::: y :: Nil)
+  	    return (derecha._1 ::: arriba._1 ::: abajo._1 ::: x :: Nil ::: y :: Nil,abajo._2)
+	    }
+	    if(x - x_ant < 0){ //Poda Derecha
+	      val derecha = Nil
+  	    val izquierda = analizarPosicion(tablero,introducirElemento(0,x+y*anchura,pisados),anchura,altura,x-1,y,x,y,valor)
+  	    val arriba = analizarPosicion(tablero,izquierda._2,anchura,altura,x,y+1,x,y,valor)
+  	    val abajo = analizarPosicion(tablero,arriba._2,anchura,altura,x,y-1,x,y,valor)
+  	    return (izquierda._1 ::: arriba._1 ::: abajo._1 ::: x :: Nil ::: y :: Nil,abajo._2)
+	    }
+	    if(y - y_ant > 0){ //Poda Abajo
+	      val derecha = analizarPosicion(tablero,introducirElemento(0,x+y*anchura,pisados),anchura,altura,x+1,y,x,y,valor)
+  	    val izquierda = analizarPosicion(tablero,derecha._2,anchura,altura,x-1,y,x,y,valor)
+  	    val arriba = analizarPosicion(tablero,izquierda._2,anchura,altura,x,y+1,x,y,valor)
+  	    val abajo = Nil
+  	    return (derecha._1 ::: izquierda._1 ::: arriba._1 ::: x :: Nil ::: y :: Nil,arriba._2)
+	    }
+	    if(y - y_ant < 0){ //Poda Arriba
+	      val derecha = analizarPosicion(tablero,introducirElemento(0,x+y*anchura,pisados),anchura,altura,x+1,y,x,y,valor)
+  	    val izquierda = analizarPosicion(tablero,derecha._2,anchura,altura,x-1,y,x,y,valor)
+  	    val arriba = Nil
+  	    val abajo = analizarPosicion(tablero,izquierda._2,anchura,altura,x,y-1,x,y,valor)
+  	    return (derecha._1 ::: izquierda._1 ::: abajo._1 ::: x :: Nil ::: y :: Nil,abajo._2)
+	    }
+	    //println("No poda")
+	    return (Nil,pisados)
+	  }else{
+	    //println("Fuera de posicion")
+	    return (Nil,pisados)
+	  }
 	}
 	
 	//Intercambia 2 elementos en el tablero, para ello se necesita el primer elemento y ambas posiciones
-	def swap(tablero:List[Int], pos1:Int, pos2:Int, elem1:Int):List[Int] =
-		introducirElemento(elem1,pos2,introducirElemento(tablero(pos2),pos1,tablero))
+	def swap(tablero:List[Int], pos1:Int, pos2:Int, elem1:Int):List[Int] = {
+	  try{
+		  introducirElemento(elem1,pos2,introducirElemento(tablero(pos2),pos1,tablero))
+		} catch {
+         case ex: IndexOutOfBoundsException =>{
+           //println("Out of bounds!")
+           tablero
+         }
+      }
+	}
 	
 	//Baja la columna eliminando de forma vertical
 	def moverColumnaVertical(tablero:List[Int], anchura:Int, altura:Int, init_y:Int, x:Int, y:Int, dificultad:Int, jewelsParaEliminar:List[Int]):List[Int] = {
-	  println("x: " + x + " y: " + y)
-	  println("jewels0: " + jewelsParaEliminar(0))
+	  //println("x: " + x + " y: " + y)
+	  //println("jewels0: " + jewelsParaEliminar(0))
 	  if(y+1<altura){
-	    println("SWAP")
+	    //println("SWAP")
 	    moverColumnaVertical(swap(tablero, x+y*anchura,x+(y+1)*anchura,tablero(x+y*anchura)),anchura,altura,init_y,x,y+1,dificultad,jewelsParaEliminar)
 	  }else if(!jewelsParaEliminar.tail.tail.isEmpty){
-	    println("Fin Iteracion, continua")
+	    //println("Fin Iteracion, continua")
 	    moverColumnaVertical(introducirElemento(numRandom(dificultad), x+y*anchura, tablero),anchura,altura,init_y,jewelsParaEliminar.tail.tail(1),init_y,dificultad,jewelsParaEliminar.tail.tail)
 	  }else{
-	    println("FIN")
+	    //println("FIN")
 	    introducirElemento(numRandom(dificultad), x+y*anchura, tablero)
 	  }
 	}
 	
-	//Baja las columnas al eliminar horizontalmente
-	def moverColumnas(tablero:List[Int], anchura:Int, altura:Int, init_y:Int, x:Int, y:Int, dificultad:Int, jewelsParaEliminar:List[Int]):List[Int] = {
-	  if(y+1<altura){
-	    moverColumnas(swap(tablero, x+y*anchura,x+(y+1)*anchura,tablero(x+y*anchura)),anchura,altura,init_y,x,y+1,dificultad,jewelsParaEliminar)
-	  }else if(!jewelsParaEliminar.tail.tail.isEmpty){
-	    moverColumnas(introducirElemento(numRandom(dificultad), x+y*anchura, tablero),anchura,altura,init_y,jewelsParaEliminar.tail.tail(0),init_y,dificultad,jewelsParaEliminar.tail.tail)
+	def getGrupoJewels(jewelsParaEliminar:List[Int], x_ant:Int, y_ant:Int):List[Int] = {
+	  if(!jewelsParaEliminar.isEmpty){
+	    if(x_ant == jewelsParaEliminar(0)){
+	      return jewelsParaEliminar(0) :: Nil ::: jewelsParaEliminar(1) :: Nil ::: getGrupoJewels(jewelsParaEliminar.tail.tail, jewelsParaEliminar(0),jewelsParaEliminar(1))
+	    }else{
+	      return Nil
+	    }
 	  }else{
-	    introducirElemento(numRandom(dificultad), x+y*anchura, tablero)
+	    return Nil
 	  }
 	}
 	
 	//Eliminar jewels y calcular puntuacion 
 	def eliminarJewels(tablero:List[Int], anchura:Int, altura:Int, dificultad:Int, jewelsParaEliminar:List[Int], puntos:Int, conjuntos:Int, canvas:Canvas,labelPuntos:Label,labelConjuntos:Label):Unit = {
-	  printList(jewelsParaEliminar)
-	  //Horizontal
-	  if(jewelsParaEliminar(1)==jewelsParaEliminar(3)){
-	    println("HORIZONTAL")
-	    bucleJuego(moverColumnas(tablero, anchura, altura, jewelsParaEliminar(1), jewelsParaEliminar(0), jewelsParaEliminar(1),dificultad,jewelsParaEliminar),anchura,altura,dificultad,seleccion,(tamañoLista(jewelsParaEliminar)/2)*25+puntos,conjuntos+1,canvas,labelPuntos,labelConjuntos)
-  	//Vertical
+	  if(!jewelsParaEliminar.isEmpty){
+  	  //printList(jewelsParaEliminar)
+	    //printTableroAux(jewelsParaEliminar,0,0,jewelsParaEliminar.size,1)
+  	  val jewelsAEliminar = jewelsParaEliminar(0) :: Nil ::: jewelsParaEliminar(1) :: Nil ::: getGrupoJewels(jewelsParaEliminar.tail.tail,jewelsParaEliminar(0),jewelsParaEliminar(1))
+  	  val newTablero = moverColumnaVertical(tablero, anchura, altura, jewelsAEliminar.reverse(0), jewelsAEliminar.reverse(1), jewelsAEliminar.reverse(0),dificultad,jewelsAEliminar.reverse)
+  	  eliminarJewels(newTablero,anchura,altura,dificultad,jewelsParaEliminar.drop(jewelsAEliminar.size),puntos+(jewelsAEliminar.size/2)*25,conjuntos,canvas,labelPuntos,labelConjuntos)
 	  }else{
-	    println("VERTICAL")
-	    bucleJuego(moverColumnaVertical(tablero, anchura, altura, jewelsParaEliminar.reverse(0), jewelsParaEliminar.reverse(1), jewelsParaEliminar.reverse(0),dificultad,jewelsParaEliminar.reverse),anchura,altura,dificultad,seleccion,(tamañoLista(jewelsParaEliminar)/2)*25+puntos,conjuntos+1,canvas,labelPuntos,labelConjuntos)
+	    bucleJuego(tablero,anchura,altura,dificultad,seleccion,puntos,conjuntos+1,canvas,labelPuntos,labelConjuntos)
 	  }
 	}
 	
 	//Analiza si la jewel que se ha movido a la posicion de destino permite eliminar jewels, cuantas y cuales y llama a eliminarlas
-	def analisisManual(tablero:List[Int], dificultad:Int,anchura:Int, altura:Int, x:Int, y:Int, valor:Int, puntos:Int, conjuntos:Int,canvas:Canvas,labelPuntos:Label,labelConjuntos:Label):Unit = {
-		val jewelsParaEliminar = analizarPosicion(tablero, anchura, altura, x, y)
-		if(jewelsParaEliminar == Nil) {bucleJuego(tablero,anchura,altura,dificultad,seleccion,puntos,conjuntos,canvas,labelPuntos,labelConjuntos)}
+	def analisisManual(tablero:List[Int], dificultad:Int,anchura:Int, altura:Int, x:Int, y:Int, valor:Int, puntos:Int, conjuntos:Int, canvas:Canvas,labelPuntos:Label,labelConjuntos:Label):Unit = {
+		val pisados = initTableroAux(anchura*altura)
+	  val jewelsParaEliminar = analizarPosicion(tablero, pisados, anchura, altura, x, y,-50,-50, valor)
+		
+		/*if(jewelsParaEliminar!=Nil)
+		  printList(jewelsParaEliminar)
+		else
+		  println("Resultado no cumple")*/
+		  
+		if(jewelsParaEliminar._1 == Nil || tamañoLista(jewelsParaEliminar._1) < 3) {bucleJuego(tablero,anchura,altura,dificultad,seleccion,puntos,conjuntos,canvas,labelPuntos,labelConjuntos)}
 		else {
-		  println("ELIMINAR")
-			eliminarJewels(tablero,anchura,altura,dificultad,jewelsParaEliminar,puntos,conjuntos,canvas,labelPuntos,labelConjuntos)
+		  //println("ELIMINAR")
+		  //println("Antes de eliminar____________")
+		  //printTablero(tablero,0,altura-1,anchura,altura)
+			eliminarJewels(tablero,anchura,altura,dificultad,jewelsParaEliminar._1,puntos,conjuntos,canvas,labelPuntos,labelConjuntos)
 		}
 	}
 	
@@ -230,45 +308,76 @@ object TableroGrafico extends SimpleSwingApplication {
 		}
 	}
 	
-	//Solo mira directamente a la derecha -> Solucion: Que mueva con minimo 2 en vez de 3
-	def analisisAutomaticoRec(tablero:List[Int], aux:List[Int], dificultad:Int,anchura:Int, altura:Int, x:Int, y:Int):List[Int] = {
+	def analisisAutomaticoRec(tablero:List[Int], aux:List[Int],aux_dir:List[Int], dificultad:Int,anchura:Int, altura:Int, x:Int, y:Int):(List[Int],List[Int]) = {
 	  if(x+y*anchura < altura*anchura) {
-  	  if(x < anchura-1)
-  	    analisisAutomaticoRec(tablero,introducirElemento(cuantasJewelsDerecha(tablero, anchura, altura, x+1, y, tablero(x+y*anchura), 0)+1,x+1+y*anchura,aux),dificultad,anchura,altura,x+1,y)
-  	  else
-  	    analisisAutomaticoRec(tablero,introducirElemento(cuantasJewelsDerecha(tablero, anchura, altura, x+1, y, tablero(x+y*anchura), 0)+1,x+1+y*anchura,aux),dificultad,anchura,altura,0,y+1)
-	  } else
-	      aux
+	    //println("AutomaticoRec x: " + x + " y: " + y)
+  	  val pisados = initTableroAux(anchura*altura)
+  	  
+  	  val eliminados_arriba = analizarPosicion(swap(tablero, x + y*anchura, x + (y+1)*anchura, tablero(x + y*anchura)),pisados,anchura,altura,x,y+1,-50,-50,tablero(x+y*anchura))
+  	  val eliminados_abajo = analizarPosicion(swap(tablero, x + y*anchura, x + (y-1)*anchura, tablero(x + y*anchura)),pisados,anchura,altura,x,y-1,-50,-50,tablero(x+y*anchura))
+  	  val eliminados_derecha = analizarPosicion(swap(tablero, x + y*anchura, x+1 + (y)*anchura, tablero(x + y*anchura)),pisados,anchura,altura,x+1,y,-50,-50,tablero(x+y*anchura))
+  	  val eliminados_izquierda = analizarPosicion(swap(tablero, x + y*anchura, x-1 + (y)*anchura, tablero(x + y*anchura)),pisados,anchura,altura,x-1,y,-50,-50,tablero(x+y*anchura))
+  	  val lista = List(eliminados_arriba._1.size,eliminados_abajo._1.size,eliminados_izquierda._1.size,eliminados_derecha._1.size)
+  	  
+  	  //println("Lista entera:")
+  	  //printList(lista)
+  	  //println("Tablero auxiliar rec")
+  	  //printTableroAux(aux,0,altura-1,anchura,altura)
+  	  //println("Tablero auxiliar direccion")
+  	  //printTableroAux(aux_dir,0,altura-1,anchura,altura)
+  	  //println("PosicionAnalisisRec: (" + x + "," + y + ") arriba: " + tamañoLista(eliminados_arriba._1) + " abajo: " + tamañoLista(eliminados_abajo._1) + " izquierda: " + tamañoLista(eliminados_izquierda._1) + " derecha: " + tamañoLista(eliminados_derecha._1))
+  	  
+  	  
+  	  if(x < anchura-1){
+  	    analisisAutomaticoRec(tablero,introducirElemento(lista.zipWithIndex.maxBy(_._1)._1, x+y*anchura, aux),introducirElemento(lista.zipWithIndex.maxBy(_._1)._2+1, x+y*anchura, aux_dir),dificultad,anchura,altura,x+1,y)
+  	  }else{
+  	    analisisAutomaticoRec(tablero,introducirElemento(lista.zipWithIndex.maxBy(_._1)._1, x+y*anchura, aux),introducirElemento(lista.zipWithIndex.maxBy(_._1)._2+1, x+y*anchura, aux_dir),dificultad,anchura,altura,0,y+1)
+  	  }
+    } else {
+	    //println("Tablero auxiliar FINAL VALORES")
+  	  //printTableroAux(aux,0,altura-1,anchura,altura)
+  	  //println("Tablero auxiliar FINAL DIR")
+  	  //printTableroAux(aux_dir,0,altura-1,anchura,altura)
+	    return (aux,aux_dir)
+	  }
 	}
 	
 	//Optiene el mejor movimiento y lo ejecuta
-	def analizarMejorOpcion(aux:List[Int], x:Int, y:Int, x_mejor:Int, y_mejor:Int, valor_mejor:Int, tablero:List[Int], anchura:Int, altura:Int, puntos:Int, conjuntos:Int,canvas:Canvas,labelPuntos:Label,labelConjuntos:Label):Unit = {
+	def analizarMejorOpcion(aux_tuple:(List[Int],List[Int]), x:Int, y:Int, x_mejor:Int, y_mejor:Int, valor_mejor:Int, dir_mejor:Int, tablero:List[Int], anchura:Int, altura:Int, puntos:Int, conjuntos:Int,canvas:Canvas, labelPuntos:Label, labelConjuntos:Label):Unit = {
 	  //Se busca la mejor opcion
+	  //println("______Aux valores______")
+	  //printTableroAux(aux_tuple._1,0,altura-1,anchura,altura)
+	  //printList(aux_tuple._1)
+	  //println("______Aux direcciones______")
+	  //printList(aux_tuple._1)
+	  //printTableroAux(aux_tuple._2,0,altura-1,anchura,altura)
+	  //println("X: " + x + " Y: " + y + " X mejor: " + x_mejor + " Y mejor: " + y_mejor + " Dir mejor: " + dir_mejor + " Valor mejor: " + valor_mejor)
 	  if(x+y*anchura < altura*anchura) {
   	  if(x < anchura-1){
-    	  if(aux(x+y*anchura)>=2 && aux(x+y*anchura) > valor_mejor){
-    	    analizarMejorOpcion(aux, x+1, y, x, y, aux(x+y*anchura),tablero,anchura,altura,puntos,conjuntos,canvas,labelPuntos,labelConjuntos)
+    	  if(aux_tuple._1(x+y*anchura)>=2 && aux_tuple._1(x+y*anchura) > valor_mejor){
+    	    analizarMejorOpcion(aux_tuple, x+1, y, x, y, aux_tuple._1(x+y*anchura),aux_tuple._2(x+y*anchura),tablero,anchura,altura,puntos,conjuntos,canvas,labelPuntos,labelConjuntos)
 	      }else{
-	        analizarMejorOpcion(aux, x+1, y, x_mejor, y_mejor, valor_mejor,tablero,anchura,altura,puntos,conjuntos,canvas,labelPuntos,labelConjuntos)
+	        analizarMejorOpcion(aux_tuple, x+1, y, x_mejor, y_mejor, valor_mejor,dir_mejor,tablero,anchura,altura,puntos,conjuntos,canvas,labelPuntos,labelConjuntos)
 	      }
   	  }else{
-  	    if(aux(x+y*anchura)>=2 && aux(x+y*anchura) > valor_mejor){
-    	    analizarMejorOpcion(aux, 0, y+1, x, y, aux(x+y*anchura),tablero,anchura,altura,puntos,conjuntos,canvas,labelPuntos,labelConjuntos)
+  	    if(aux_tuple._1(x+y*anchura)>=2 && aux_tuple._1(x+y*anchura) > valor_mejor){
+    	    analizarMejorOpcion(aux_tuple, 0, y+1, x, y, aux_tuple._1(x+y*anchura),aux_tuple._2(x+y*anchura),tablero,anchura,altura,puntos,conjuntos,canvas,labelPuntos,labelConjuntos)
 	      }else{
-	        analizarMejorOpcion(aux, 0, y+1, x_mejor, y_mejor, valor_mejor,tablero,anchura,altura,puntos,conjuntos,canvas,labelPuntos,labelConjuntos)
+	        analizarMejorOpcion(aux_tuple, 0, y+1, x_mejor, y_mejor, valor_mejor,dir_mejor,tablero,anchura,altura,puntos,conjuntos,canvas,labelPuntos,labelConjuntos)
 	      }
   	  }
 	  }else{
 	    //Ya se ha obtenido la mejor opcion
-	     intercambiarJewels(tablero, x_mejor, y_mejor, 4, anchura, altura,puntos,conjuntos,canvas,labelPuntos,labelConjuntos)
+	    //println("Mejor -> x: " + x_mejor + " y: " + y_mejor + " direccion: " + dir_mejor)
+	     intercambiarJewels(tablero, x_mejor, y_mejor, dir_mejor, anchura, altura,puntos,conjuntos,canvas,labelPuntos,labelConjuntos)
 	  }
 	}
 	
-	//Busca el mejor movimiento hacia la derecha empleando una estructura auxiliar para guardar cuantas jewels se eliminarian
-	def analisisAutomatico(tablero:List[Int], dificultad:Int,anchura:Int, altura:Int, puntos:Int, conjuntos:Int,canvas:Canvas):Unit = {
+	def analisisAutomatico(tablero:List[Int], dificultad:Int,anchura:Int, altura:Int, puntos:Int, conjuntos:Int,canvas:Canvas, labelPuntos:Label, labelConjuntos:Label):Unit = {
 	  val aux = initTableroAux(anchura*altura)
+	  val aux_dir = initTableroAux(anchura*altura)
 	  //printTablero(analisisAutomaticoRec(tablero, aux, dificultad, anchura, altura, 0, 0),0,altura-1,anchura,altura)
-	  analizarMejorOpcion(analisisAutomaticoRec(tablero, aux, dificultad, anchura, altura, 0, 0), 0, 0, 0, 0, 0, tablero, anchura, altura, puntos, conjuntos,canvas,labelPuntos,labelConjuntos)
+	  analizarMejorOpcion(analisisAutomaticoRec(tablero, aux, aux_dir, dificultad, anchura, altura, 0, 0), 0, 0, 0, 0, 0, 4, tablero, anchura, altura, puntos, conjuntos,canvas,labelPuntos,labelConjuntos)
 	}
 	
 	def bucleJuego(tablero:List[Int], anchura:Int, altura:Int, dificultad:Int, seleccion:Int, puntos:Int, conjuntos:Int, canvas:Canvas, labelPuntos:Label, labelConjuntos:Label):Unit = {
@@ -290,7 +399,7 @@ object TableroGrafico extends SimpleSwingApplication {
     	  //Opciones 2, 3 no hacen nada de momento, solo continuan el bucle del juego, 0 sale del programa
     	  opcionElegida match {
     	    case 0 => System.exit(1)
-    	     case 1 => analisisAutomatico(tablero, dificultad, anchura, altura,puntos,conjuntos,canvas)
+    	     case 1 => analisisAutomatico(tablero, dificultad, anchura, altura,puntos,conjuntos,canvas,labelPuntos,labelConjuntos)
     	     case 2 => {bucleJuego(tablero,anchura,altura,dificultad,seleccion,puntos,conjuntos,canvas,labelPuntos,labelConjuntos)}
     	     case 3 => {bucleJuego(tablero,anchura,altura,dificultad,seleccion,puntos,conjuntos,canvas,labelPuntos,labelConjuntos)}
     	     case _ => bucleJuego(tablero,anchura,altura,dificultad,seleccion,puntos,conjuntos,canvas,labelPuntos,labelConjuntos)

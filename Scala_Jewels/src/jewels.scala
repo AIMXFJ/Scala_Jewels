@@ -15,10 +15,10 @@ object jewels extends App {
 		
 	def printTableroAux(tablero:List[Int], x:Int, y:Int, anchura:Int, altura:Int):Unit = {		
 		  if(x >= 0 && x < anchura-1){
-		    print(" | " + tablero(x+y*anchura))
+		    print(" | " + tablero(x+y*anchura)) + "(" + x +","+y+")"
 		    printTableroAux(tablero, x+1, y, anchura, altura)
 		  }else if (x==anchura-1 && y>=0) {
-		    print(" | " +tablero(x+y*anchura)+" | ")
+		    print(" | " +tablero(x+y*anchura)+" | ") + "(" + x +","+y+")"
 		    println()
 		    if(y>0)
 	        printTableroAux(tablero, 0, y-1, anchura, altura)
@@ -56,10 +56,13 @@ object jewels extends App {
 	}
 	
 	def tamañoLista(lista:List[Int]):Int = {
-	  if(lista.tail.isEmpty)
-	    1
-	  else
-	    1 + tamañoLista(lista.tail)
+	  if(!lista.isEmpty)
+  	  if(lista.tail.isEmpty)
+  	    1
+  	  else
+  	    1 + tamañoLista(lista.tail)
+  	else
+  	  0
 	}
   
   //Genera un numero aleatorio en funcion de la dificultad
@@ -85,10 +88,13 @@ object jewels extends App {
 
 	
 	def analizarPosicion(tablero:List[Int], pisados:List[Int],anchura:Int,altura:Int,x:Int,y:Int,x_ant:Int,y_ant:Int,valor:Int):(List[Int],List[Int]) = {
-	  println("Analizar pos: " + x + " " + y + " ant: " + x_ant + " " + y_ant + " valor: " + valor)
+	  //println("Analizar pos: " + x + " " + y + " ant: " + x_ant + " " + y_ant + " valor: " + valor)
+	  //if(x>=0 && y >=0 && y<altura && x<anchura)
+	  //println("Valor de la posicion: " + tablero(x+y*anchura))
+	  //printTablero(tablero,0,altura-1,anchura,altura)
 	  //println("Pisados:")
 	  //printTableroAux(pisados,0,altura-1,anchura,altura)
-	  if((x != x_ant || y != y_ant) && x>=0 && y>=0 && x+y*anchura < anchura * altura && x+y*anchura >= 0 && pisados(x+y*anchura) == 1 && tablero(x+y*anchura) == valor){
+	  if((x != x_ant || y != y_ant) && x>=0 && y>=0 && x<anchura && y < altura && x+y*anchura < anchura * altura && x+y*anchura >= 0 && pisados(x+y*anchura) == 1 && tablero(x+y*anchura) == valor){
 	    if(x_ant == -50 && y_ant == -50){ //Inicial
 	      //println("Inicial, " + x + " " + y)
 	      val derecha = analizarPosicion(tablero,introducirElemento(0,x+y*anchura,pisados),anchura,altura,x+1,y,x,y,valor)
@@ -100,16 +106,19 @@ object jewels extends App {
   	    val abajo = analizarPosicion(tablero,arriba._2,anchura,altura,x,y-1,x,y,valor)
   	    //printTableroAux(abajo._2,0,altura-1,anchura,altura)
   	    
-  	    //println("derecha: " + derecha.size + " izq: " + izquierda.size + " arr: " + arriba.size + " debaj: " + abajo.size)
+  	    //println("!!!!!!derecha: " + derecha._1.size + " izq: " + izquierda._1.size + " arr: " + arriba._1.size + " debaj: " + abajo._1.size)
   	    
   	    if(derecha._1.size + izquierda._1.size >= 2){
   	      val list = derecha._1 ::: izquierda._1 ::: arriba._1 ::: abajo._1 ::: x :: Nil ::: y :: Nil
+  	      //println("Inicio (" + x +","+y+")" + " Resultado: " + list)
   	      return (list, abajo._2)
   	    }
   	    if(arriba._1.size + abajo._1.size >= 2){
   	      val list = derecha._1 ::: izquierda._1 ::: arriba._1 ::: abajo._1 ::: x :: Nil ::: y :: Nil
+  	      //println("Inicio (" + x +","+y+")" + " Resultado: " + list)
   	      return (list,abajo._2)
   	    }
+  	    //println("Sin resultado")
   	    return (Nil,abajo._2)
 	    }
 	    if(x - x_ant > 0){ //Poda Izquierda
@@ -118,31 +127,33 @@ object jewels extends App {
   	    val arriba = analizarPosicion(tablero,derecha._2,anchura,altura,x,y+1,x,y,valor)
   	    val abajo = analizarPosicion(tablero,arriba._2,anchura,altura,x,y-1,x,y,valor)
   	    //printList(derecha ::: izquierda ::: arriba ::: abajo ::: x :: Nil ::: y :: Nil)
-  	    return (derecha._1 ::: izquierda ::: arriba._1 ::: abajo._1 ::: x :: Nil ::: y :: Nil,abajo._2)
+  	    return (derecha._1 ::: arriba._1 ::: abajo._1 ::: x :: Nil ::: y :: Nil,abajo._2)
 	    }
 	    if(x - x_ant < 0){ //Poda Derecha
 	      val derecha = Nil
   	    val izquierda = analizarPosicion(tablero,introducirElemento(0,x+y*anchura,pisados),anchura,altura,x-1,y,x,y,valor)
   	    val arriba = analizarPosicion(tablero,izquierda._2,anchura,altura,x,y+1,x,y,valor)
   	    val abajo = analizarPosicion(tablero,arriba._2,anchura,altura,x,y-1,x,y,valor)
-  	    return (derecha ::: izquierda._1 ::: arriba._1 ::: abajo._1 ::: x :: Nil ::: y :: Nil,abajo._2)
+  	    return (izquierda._1 ::: arriba._1 ::: abajo._1 ::: x :: Nil ::: y :: Nil,abajo._2)
 	    }
 	    if(y - y_ant > 0){ //Poda Abajo
 	      val derecha = analizarPosicion(tablero,introducirElemento(0,x+y*anchura,pisados),anchura,altura,x+1,y,x,y,valor)
   	    val izquierda = analizarPosicion(tablero,derecha._2,anchura,altura,x-1,y,x,y,valor)
   	    val arriba = analizarPosicion(tablero,izquierda._2,anchura,altura,x,y+1,x,y,valor)
   	    val abajo = Nil
-  	    return (derecha._1 ::: izquierda._1 ::: arriba._1 ::: abajo ::: x :: Nil ::: y :: Nil,arriba._2)
+  	    return (derecha._1 ::: izquierda._1 ::: arriba._1 ::: x :: Nil ::: y :: Nil,arriba._2)
 	    }
 	    if(y - y_ant < 0){ //Poda Arriba
 	      val derecha = analizarPosicion(tablero,introducirElemento(0,x+y*anchura,pisados),anchura,altura,x+1,y,x,y,valor)
   	    val izquierda = analizarPosicion(tablero,derecha._2,anchura,altura,x-1,y,x,y,valor)
   	    val arriba = Nil
   	    val abajo = analizarPosicion(tablero,izquierda._2,anchura,altura,x,y-1,x,y,valor)
-  	    return (derecha._1 ::: izquierda._1 ::: arriba ::: abajo._1 ::: x :: Nil ::: y :: Nil,abajo._2)
+  	    return (derecha._1 ::: izquierda._1 ::: abajo._1 ::: x :: Nil ::: y :: Nil,abajo._2)
 	    }
+	    //println("No poda")
 	    return (Nil,pisados)
 	  }else{
+	    //println("Fuera de posicion")
 	    return (Nil,pisados)
 	  }
 	}
@@ -153,6 +164,7 @@ object jewels extends App {
 		  introducirElemento(elem1,pos2,introducirElemento(tablero(pos2),pos1,tablero))
 		} catch {
          case ex: IndexOutOfBoundsException =>{
+           //println("Out of bounds!")
            tablero
          }
       }
@@ -175,7 +187,7 @@ object jewels extends App {
 	}
 	
 	//Baja las columnas al eliminar horizontalmente
-	def moverColumnas(tablero:List[Int], anchura:Int, altura:Int, init_y:Int, x:Int, y:Int, dificultad:Int, jewelsParaEliminar:List[Int]):List[Int] = {
+	/*def moverColumnas(tablero:List[Int], anchura:Int, altura:Int, init_y:Int, x:Int, y:Int, dificultad:Int, jewelsParaEliminar:List[Int]):List[Int] = {
 	  if(y+1<altura){
 	    moverColumnas(swap(tablero, x+y*anchura,x+(y+1)*anchura,tablero(x+y*anchura)),anchura,altura,init_y,x,y+1,dificultad,jewelsParaEliminar)
 	  }else if(!jewelsParaEliminar.tail.tail.isEmpty){
@@ -183,19 +195,46 @@ object jewels extends App {
 	  }else{
 	    introducirElemento(numRandom(dificultad), x+y*anchura, tablero)
 	  }
-	}
+	}*/
 	
 	//Eliminar jewels y calcular puntuacion 
-	def eliminarJewels(tablero:List[Int], anchura:Int, altura:Int, dificultad:Int, jewelsParaEliminar:List[Int], puntos:Int, conjuntos:Int):Unit = {
+	/*def eliminarJewels(tablero:List[Int], anchura:Int, altura:Int, dificultad:Int, jewelsParaEliminar:List[Int], puntos:Int, conjuntos:Int):Unit = {
 	  printList(jewelsParaEliminar)
 	  //Horizontal
 	  if(jewelsParaEliminar(1)==jewelsParaEliminar(3)){
 	    //println("HORIZONTAL")
+	    printTablero(tablero,0,altura-1,anchura,altura)
 	    bucleJuego(moverColumnas(tablero, anchura, altura, jewelsParaEliminar(1), jewelsParaEliminar(0), jewelsParaEliminar(1),dificultad,jewelsParaEliminar),anchura,altura,dificultad,seleccion,(tamañoLista(jewelsParaEliminar)/2)*25+puntos,conjuntos+1)
   	//Vertical
 	  }else{
 	    //println("VERTICAL")
+	    printTablero(tablero,0,altura-1,anchura,altura)
 	    bucleJuego(moverColumnaVertical(tablero, anchura, altura, jewelsParaEliminar.reverse(0), jewelsParaEliminar.reverse(1), jewelsParaEliminar.reverse(0),dificultad,jewelsParaEliminar.reverse),anchura,altura,dificultad,seleccion,(tamañoLista(jewelsParaEliminar)/2)*25+puntos,conjuntos+1)
+	  }
+	}*/
+	
+	def getGrupoJewels(jewelsParaEliminar:List[Int], x_ant:Int, y_ant:Int):List[Int] = {
+	  if(!jewelsParaEliminar.isEmpty){
+	    if(x_ant == jewelsParaEliminar(0)){
+	      return jewelsParaEliminar(0) :: Nil ::: jewelsParaEliminar(1) :: Nil ::: getGrupoJewels(jewelsParaEliminar.tail.tail, jewelsParaEliminar(0),jewelsParaEliminar(1))
+	    }else{
+	      return Nil
+	    }
+	  }else{
+	    return Nil
+	  }
+	}
+	
+	//Eliminar jewels y calcular puntuacion 
+	def eliminarJewels(tablero:List[Int], anchura:Int, altura:Int, dificultad:Int, jewelsParaEliminar:List[Int], puntos:Int, conjuntos:Int):Unit = {
+	  if(!jewelsParaEliminar.isEmpty){
+  	  //printList(jewelsParaEliminar)
+	    //printTableroAux(jewelsParaEliminar,0,0,jewelsParaEliminar.size,1)
+  	  val jewelsAEliminar = jewelsParaEliminar(0) :: Nil ::: jewelsParaEliminar(1) :: Nil ::: getGrupoJewels(jewelsParaEliminar.tail.tail,jewelsParaEliminar(0),jewelsParaEliminar(1))
+  	  val newTablero = moverColumnaVertical(tablero, anchura, altura, jewelsAEliminar.reverse(0), jewelsAEliminar.reverse(1), jewelsAEliminar.reverse(0),dificultad,jewelsAEliminar.reverse)
+  	  eliminarJewels(newTablero,anchura,altura,dificultad,jewelsParaEliminar.drop(jewelsAEliminar.size),puntos+(jewelsAEliminar.size/2)*25,conjuntos)
+	  }else{
+	    bucleJuego(tablero,anchura,altura,dificultad,seleccion,puntos,conjuntos+1)
 	  }
 	}
 	
@@ -212,6 +251,8 @@ object jewels extends App {
 		if(jewelsParaEliminar._1 == Nil || tamañoLista(jewelsParaEliminar._1) < 3) {bucleJuego(tablero,anchura,altura,dificultad,seleccion,puntos,conjuntos)}
 		else {
 		  //println("ELIMINAR")
+		  //println("Antes de eliminar____________")
+		  //printTablero(tablero,0,altura-1,anchura,altura)
 			eliminarJewels(tablero,anchura,altura,dificultad,jewelsParaEliminar._1,puntos,conjuntos)
 		}
 	}
@@ -243,32 +284,36 @@ object jewels extends App {
 		}
 	}
 	
-	//Solo mira directamente a la derecha -> Solucion: Que mueva con minimo 2 en vez de 3
 	def analisisAutomaticoRec(tablero:List[Int], aux:List[Int],aux_dir:List[Int], dificultad:Int,anchura:Int, altura:Int, x:Int, y:Int):(List[Int],List[Int]) = {
-	  //analizarPosicion(tablero,anchura,altura,x,y,-50,-50,valor)
-	  /*if(x+y*anchura < altura*anchura) {
-  	  if(x < anchura-1)
-  	    analisisAutomaticoRec(tablero,introducirElemento(cuantasJewelsDerecha(tablero, anchura, altura, x+1, y, tablero(x+y*anchura), 0)+1,x+1+y*anchura,aux),dificultad,anchura,altura,x+1,y)
-  	  else
-  	    analisisAutomaticoRec(tablero,introducirElemento(cuantasJewelsDerecha(tablero, anchura, altura, x+1, y, tablero(x+y*anchura), 0)+1,x+1+y*anchura,aux),dificultad,anchura,altura,0,y+1)
-	  } else
-	      aux*/
 	  if(x+y*anchura < altura*anchura) {
 	    //println("AutomaticoRec x: " + x + " y: " + y)
-  	  val copia_tablero = tablero
   	  val pisados = initTableroAux(anchura*altura)
-  	  //printTableroAux(copia_tablero,0,altura-1,anchura,altura)
-  	  val eliminados_arriba = analizarPosicion(swap(copia_tablero, x + y*anchura, x + (y+1)*anchura, copia_tablero(x + y*anchura)),introducirElemento(0,x+y*anchura,pisados),anchura,altura,x,y,-50,-50,copia_tablero(x+y*anchura))
-  	  val eliminados_abajo = analizarPosicion(swap(copia_tablero, x + y*anchura, x + (y-1)*anchura, copia_tablero(x + y*anchura)),eliminados_arriba._2,anchura,altura,x,y,-50,-50,copia_tablero(x+y*anchura))
-  	  val eliminados_derecha = analizarPosicion(swap(copia_tablero, x + y*anchura, x+1 + (y)*anchura, copia_tablero(x + y*anchura)),eliminados_abajo._2,anchura,altura,x,y,-50,-50,copia_tablero(x+y*anchura))
-  	  val eliminados_izquierda = analizarPosicion(swap(copia_tablero, x + y*anchura, x-1 + (y)*anchura, copia_tablero(x + y*anchura)),eliminados_derecha._2,anchura,altura,x,y,-50,-50,copia_tablero(x+y*anchura))
+  	  
+  	  val eliminados_arriba = analizarPosicion(swap(tablero, x + y*anchura, x + (y+1)*anchura, tablero(x + y*anchura)),pisados,anchura,altura,x,y+1,-50,-50,tablero(x+y*anchura))
+  	  val eliminados_abajo = analizarPosicion(swap(tablero, x + y*anchura, x + (y-1)*anchura, tablero(x + y*anchura)),pisados,anchura,altura,x,y-1,-50,-50,tablero(x+y*anchura))
+  	  val eliminados_derecha = analizarPosicion(swap(tablero, x + y*anchura, x+1 + (y)*anchura, tablero(x + y*anchura)),pisados,anchura,altura,x+1,y,-50,-50,tablero(x+y*anchura))
+  	  val eliminados_izquierda = analizarPosicion(swap(tablero, x + y*anchura, x-1 + (y)*anchura, tablero(x + y*anchura)),pisados,anchura,altura,x-1,y,-50,-50,tablero(x+y*anchura))
   	  val lista = List(eliminados_arriba._1.size,eliminados_abajo._1.size,eliminados_izquierda._1.size,eliminados_derecha._1.size)
   	  
-  	  if(x < anchura-1)
+  	  //println("Lista entera:")
+  	  //printList(lista)
+  	  //println("Tablero auxiliar rec")
+  	  //printTableroAux(aux,0,altura-1,anchura,altura)
+  	  //println("Tablero auxiliar direccion")
+  	  //printTableroAux(aux_dir,0,altura-1,anchura,altura)
+  	  //println("PosicionAnalisisRec: (" + x + "," + y + ") arriba: " + tamañoLista(eliminados_arriba._1) + " abajo: " + tamañoLista(eliminados_abajo._1) + " izquierda: " + tamañoLista(eliminados_izquierda._1) + " derecha: " + tamañoLista(eliminados_derecha._1))
+  	  
+  	  
+  	  if(x < anchura-1){
   	    analisisAutomaticoRec(tablero,introducirElemento(lista.zipWithIndex.maxBy(_._1)._1, x+y*anchura, aux),introducirElemento(lista.zipWithIndex.maxBy(_._1)._2+1, x+y*anchura, aux_dir),dificultad,anchura,altura,x+1,y)
-  	  else
+  	  }else{
   	    analisisAutomaticoRec(tablero,introducirElemento(lista.zipWithIndex.maxBy(_._1)._1, x+y*anchura, aux),introducirElemento(lista.zipWithIndex.maxBy(_._1)._2+1, x+y*anchura, aux_dir),dificultad,anchura,altura,0,y+1)
-	  } else {
+  	  }
+    } else {
+	    //println("Tablero auxiliar FINAL VALORES")
+  	  //printTableroAux(aux,0,altura-1,anchura,altura)
+  	  //println("Tablero auxiliar FINAL DIR")
+  	  //printTableroAux(aux_dir,0,altura-1,anchura,altura)
 	    return (aux,aux_dir)
 	  }
 	}
@@ -278,9 +323,11 @@ object jewels extends App {
 	  //Se busca la mejor opcion
 	  //println("______Aux valores______")
 	  //printTableroAux(aux_tuple._1,0,altura-1,anchura,altura)
+	  //printList(aux_tuple._1)
 	  //println("______Aux direcciones______")
+	  //printList(aux_tuple._1)
 	  //printTableroAux(aux_tuple._2,0,altura-1,anchura,altura)
-	  
+	  //println("X: " + x + " Y: " + y + " X mejor: " + x_mejor + " Y mejor: " + y_mejor + " Dir mejor: " + dir_mejor + " Valor mejor: " + valor_mejor)
 	  if(x+y*anchura < altura*anchura) {
   	  if(x < anchura-1){
     	  if(aux_tuple._1(x+y*anchura)>=2 && aux_tuple._1(x+y*anchura) > valor_mejor){
@@ -297,11 +344,11 @@ object jewels extends App {
   	  }
 	  }else{
 	    //Ya se ha obtenido la mejor opcion
+	    //println("Mejor -> x: " + x_mejor + " y: " + y_mejor + " direccion: " + dir_mejor)
 	     intercambiarJewels(tablero, x_mejor, y_mejor, dir_mejor, anchura, altura,puntos,conjuntos)
 	  }
 	}
 	
-	//Busca el mejor movimiento hacia la derecha empleando una estructura auxiliar para guardar cuantas jewels se eliminarian
 	def analisisAutomatico(tablero:List[Int], dificultad:Int,anchura:Int, altura:Int, puntos:Int, conjuntos:Int):Unit = {
 	  val aux = initTableroAux(anchura*altura)
 	  val aux_dir = initTableroAux(anchura*altura)
