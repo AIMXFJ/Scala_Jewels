@@ -4,12 +4,12 @@ import java.awt.Graphics
 import java.awt.Image
 import javax.swing.ImageIcon
 
-case class Canvas(anch:Int, alt:Int) extends Panel {
+case class Canvas(anch:Int, alt:Int) extends Panel {  //Clase que contiene el tablero
   var jewels:List[Int] = List()
   val anchura = anch
   val altura = alt
 
-  override def paintComponent(g: Graphics2D) {
+  override def paintComponent(g: Graphics2D) {  //Método de la interfaz para dibujar las jewels.
     
     // Se limpia el Canvas
     g.clearRect(0, 0, size.width, size.height)
@@ -19,6 +19,7 @@ case class Canvas(anch:Int, alt:Int) extends Panel {
     
   }
 
+  //Calcula donde deben dibujarse las jewels y las dibuja hasta que este todo el tablero dibujado.
   def updateJewels(g:Graphics2D, jewels:List[Int], anchura:Int, altura:Int, x:Int, y:Int) {
     if(x+y*anchura < anchura*altura && x+y*anchura >= 0){
     jewels(x+y*anchura) match {

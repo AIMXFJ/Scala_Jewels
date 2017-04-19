@@ -13,6 +13,7 @@ object jewels extends App {
 		if(tablero.isEmpty) Nil else if (pos==0) color::tablero.tail
 		else tablero.head::introducirElemento(color,pos-1,tablero.tail)
 		
+	//Imprime tableros auxiliares con un formato legible. Función empleada para debug
 	def printTableroAux(tablero:List[Int], x:Int, y:Int, anchura:Int, altura:Int):Unit = {		
 		  if(x >= 0 && x < anchura-1){
 		    print(" | " + tablero(x+y*anchura)) + "(" + x +","+y+")"
@@ -25,6 +26,7 @@ object jewels extends App {
 		  }
 	}
 
+	//Imprime el tablero
 	def printTablero(tablero:List[Int], x:Int, y:Int, anchura:Int, altura:Int):Unit = {
 	  if(x >= 0 && x < anchura-1){
 	    tablero(x+y*anchura) match {
@@ -55,6 +57,7 @@ object jewels extends App {
 	  }
 	}
 	
+	//Devuelve el tamaño de una lista
 	def tamañoLista(lista:List[Int]):Int = {
 	  if(!lista.isEmpty)
   	  if(lista.tail.isEmpty)
@@ -79,46 +82,35 @@ object jewels extends App {
  		}
 	}
   
-  //Inicializa un tablero auxiliar a todo 1
+  //Inicializa un tablero auxiliar a todo 1s
   def initTableroAux (times:Int) : List[Int] = {
  		times match { case 0 => Nil
  		case times => initTableroAux (times-1):::1::Nil
  		}
 	}
 
-	
+	/** Se encarga de revisar si en torno a (x,y) se producen conjuntos de jewels iguales, es decir,
+	 * mira si hay jewels formando grupos.
+	 * @param x_ant posición X del paso anterior, para evitar ciclos infinitos podando la rama ya vista del grafo
+	 * @param y_ant posición Y del paso anterior, se emplea para podar la rama ya vista del grafo.
+	 * @return Devuelve una tupla formada por la lista de jewels que forman grupo y por el auxiliar de hijos (casillas o jewels) ya visitados
+	 * */
 	def analizarPosicion(tablero:List[Int], pisados:List[Int],anchura:Int,altura:Int,x:Int,y:Int,x_ant:Int,y_ant:Int,valor:Int):(List[Int],List[Int]) = {
-	  //println("Analizar pos: " + x + " " + y + " ant: " + x_ant + " " + y_ant + " valor: " + valor)
-	  //if(x>=0 && y >=0 && y<altura && x<anchura)
-	  //println("Valor de la posicion: " + tablero(x+y*anchura))
-	  //printTablero(tablero,0,altura-1,anchura,altura)
-	  //println("Pisados:")
-	  //printTableroAux(pisados,0,altura-1,anchura,altura)
 	  if((x != x_ant || y != y_ant) && x>=0 && y>=0 && x<anchura && y < altura && x+y*anchura < anchura * altura && x+y*anchura >= 0 && pisados(x+y*anchura) == 1 && tablero(x+y*anchura) == valor){
-	    if(x_ant == -50 && y_ant == -50){ //Inicial
-	      //println("Inicial, " + x + " " + y)
+	    if(x_ant == -50 && y_ant == -50){ //Caso inicial, lanza las primeras revisiones y devuelve los resultados
 	      val derecha = analizarPosicion(tablero,introducirElemento(0,x+y*anchura,pisados),anchura,altura,x+1,y,x,y,valor)
-	      //printTableroAux(derecha._2,0,altura-1,anchura,altura)
   	    val izquierda = analizarPosicion(tablero,derecha._2,anchura,altura,x-1,y,x,y,valor)
-  	    //printTableroAux(izquierda._2,0,altura-1,anchura,altura)
   	    val arriba = analizarPosicion(tablero,izquierda._2,anchura,altura,x,y+1,x,y,valor)
-  	    //printTableroAux(arriba._2,0,altura-1,anchura,altura)
   	    val abajo = analizarPosicion(tablero,arriba._2,anchura,altura,x,y-1,x,y,valor)
-  	    //printTableroAux(abajo._2,0,altura-1,anchura,altura)
-  	    
-  	    //println("!!!!!!derecha: " + derecha._1.size + " izq: " + izquierda._1.size + " arr: " + arriba._1.size + " debaj: " + abajo._1.size)
   	    
   	    if(derecha._1.size + izquierda._1.size >= 2){
   	      val list = derecha._1 ::: izquierda._1 ::: arriba._1 ::: abajo._1 ::: x :: Nil ::: y :: Nil
-  	      //println("Inicio (" + x +","+y+")" + " Resultado: " + list)
   	      return (list, abajo._2)
   	    }
   	    if(arriba._1.size + abajo._1.size >= 2){
   	      val list = derecha._1 ::: izquierda._1 ::: arriba._1 ::: abajo._1 ::: x :: Nil ::: y :: Nil
-  	      //println("Inicio (" + x +","+y+")" + " Resultado: " + list)
   	      return (list,abajo._2)
   	    }
-  	    //println("Sin resultado")
   	    return (Nil,abajo._2)
 	    }
 	    if(x - x_ant > 0){ //Poda Izquierda
@@ -150,21 +142,20 @@ object jewels extends App {
   	    val abajo = analizarPosicion(tablero,izquierda._2,anchura,altura,x,y-1,x,y,valor)
   	    return (derecha._1 ::: izquierda._1 ::: abajo._1 ::: x :: Nil ::: y :: Nil,abajo._2)
 	    }
-	    //println("No poda")
 	    return (Nil,pisados)
 	  }else{
-	    //println("Fuera de posicion")
 	    return (Nil,pisados)
 	  }
 	}
 	
-	//Intercambia 2 elementos en el tablero, para ello se necesita el primer elemento y ambas posiciones
+	/*Intercambia 2 elementos en el tablero, para ello se necesita el primer elemento y ambas posiciones
+	 * En caso de salirse del tablero (por culpa de la funcion que revisa el mejor movimiento) devuelve el
+	 * tablero sin modificar */
 	def swap(tablero:List[Int], pos1:Int, pos2:Int, elem1:Int):List[Int] = {
 	  try{
 		  introducirElemento(elem1,pos2,introducirElemento(tablero(pos2),pos1,tablero))
 		} catch {
          case ex: IndexOutOfBoundsException =>{
-           //println("Out of bounds!")
            tablero
          }
       }
@@ -172,21 +163,16 @@ object jewels extends App {
 	
 	//Baja la columna eliminando de forma vertical
 	def moverColumnaVertical(tablero:List[Int], anchura:Int, altura:Int, init_y:Int, x:Int, y:Int, dificultad:Int, jewelsParaEliminar:List[Int]):List[Int] = {
-	  //println("x: " + x + " y: " + y)
-	  //println("jewels0: " + jewelsParaEliminar(0))
 	  if(y+1<altura){
-	    //println("SWAP")
 	    moverColumnaVertical(swap(tablero, x+y*anchura,x+(y+1)*anchura,tablero(x+y*anchura)),anchura,altura,init_y,x,y+1,dificultad,jewelsParaEliminar)
 	  }else if(!jewelsParaEliminar.tail.tail.isEmpty){
-	    //println("Fin Iteracion, continua")
 	    moverColumnaVertical(introducirElemento(numRandom(dificultad), x+y*anchura, tablero),anchura,altura,init_y,jewelsParaEliminar.tail.tail(1),init_y,dificultad,jewelsParaEliminar.tail.tail)
 	  }else{
-	    //println("FIN")
 	    introducirElemento(numRandom(dificultad), x+y*anchura, tablero)
 	  }
 	}
 	
-	//Baja las columnas al eliminar horizontalmente
+	//Baja las columnas al eliminar horizontalmente. Función antigua, no se usa actualmente
 	/*def moverColumnas(tablero:List[Int], anchura:Int, altura:Int, init_y:Int, x:Int, y:Int, dificultad:Int, jewelsParaEliminar:List[Int]):List[Int] = {
 	  if(y+1<altura){
 	    moverColumnas(swap(tablero, x+y*anchura,x+(y+1)*anchura,tablero(x+y*anchura)),anchura,altura,init_y,x,y+1,dificultad,jewelsParaEliminar)
@@ -197,22 +183,14 @@ object jewels extends App {
 	  }
 	}*/
 	
-	//Eliminar jewels y calcular puntuacion 
-	/*def eliminarJewels(tablero:List[Int], anchura:Int, altura:Int, dificultad:Int, jewelsParaEliminar:List[Int], puntos:Int, conjuntos:Int):Unit = {
-	  printList(jewelsParaEliminar)
-	  //Horizontal
-	  if(jewelsParaEliminar(1)==jewelsParaEliminar(3)){
-	    //println("HORIZONTAL")
-	    printTablero(tablero,0,altura-1,anchura,altura)
-	    bucleJuego(moverColumnas(tablero, anchura, altura, jewelsParaEliminar(1), jewelsParaEliminar(0), jewelsParaEliminar(1),dificultad,jewelsParaEliminar),anchura,altura,dificultad,seleccion,(tamañoLista(jewelsParaEliminar)/2)*25+puntos,conjuntos+1)
-  	//Vertical
-	  }else{
-	    //println("VERTICAL")
-	    printTablero(tablero,0,altura-1,anchura,altura)
-	    bucleJuego(moverColumnaVertical(tablero, anchura, altura, jewelsParaEliminar.reverse(0), jewelsParaEliminar.reverse(1), jewelsParaEliminar.reverse(0),dificultad,jewelsParaEliminar.reverse),anchura,altura,dificultad,seleccion,(tamañoLista(jewelsParaEliminar)/2)*25+puntos,conjuntos+1)
-	  }
-	}*/
-	
+	/**Se encarga de dividir las jewels a eliminar en grupos eliminables verticalmente, en caso de que sea un grupo horizontal
+	 * 		se generarán tantos grupos como jewels lo formen, siendo cada grupo formado por una jewel eliminada como si fuera un grupo
+	 * 		vertical, permitiendo eliminar cualquier tipo de grupo de forma generalizada
+	 * 
+	 * @param jewelsParaEliminar jewes que hay que eliminar
+	 * @param x_ant valor X de la jewel anterior, para ver si forman grupo vertical o no
+	 * @param y_ant valor Y de la jewel anterior, mismo uso que x_ant
+	 * @return Grupo de jewels horizontal/vertical listo para ser eliminado verticalmente*/
 	def getGrupoJewels(jewelsParaEliminar:List[Int], x_ant:Int, y_ant:Int):List[Int] = {
 	  if(!jewelsParaEliminar.isEmpty){
 	    if(x_ant == jewelsParaEliminar(0)){
@@ -225,15 +203,13 @@ object jewels extends App {
 	  }
 	}
 	
-	//Eliminar jewels y calcular puntuacion 
+	/*Eliminar jewels y calcular puntuacion. Elimina grupos de jewels hasta que no hay más en la lista. */
 	def eliminarJewels(tablero:List[Int], anchura:Int, altura:Int, dificultad:Int, jewelsParaEliminar:List[Int], puntos:Int, conjuntos:Int):Unit = {
 	  if(!jewelsParaEliminar.isEmpty){
-  	  //printList(jewelsParaEliminar)
-	    //printTableroAux(jewelsParaEliminar,0,0,jewelsParaEliminar.size,1)
   	  val jewelsAEliminar = jewelsParaEliminar(0) :: Nil ::: jewelsParaEliminar(1) :: Nil ::: getGrupoJewels(jewelsParaEliminar.tail.tail,jewelsParaEliminar(0),jewelsParaEliminar(1))
   	  val newTablero = moverColumnaVertical(tablero, anchura, altura, jewelsAEliminar.reverse(0), jewelsAEliminar.reverse(1), jewelsAEliminar.reverse(0),dificultad,jewelsAEliminar.reverse)
   	  eliminarJewels(newTablero,anchura,altura,dificultad,jewelsParaEliminar.drop(jewelsAEliminar.size),puntos+(jewelsAEliminar.size/2)*25,conjuntos)
-	  }else{
+	  }else{  //Cuando se han eliminado todas las jewels
 	    bucleJuego(tablero,anchura,altura,dificultad,seleccion,puntos,conjuntos+1)
 	  }
 	}
@@ -242,32 +218,24 @@ object jewels extends App {
 	def analisisManual(tablero:List[Int], dificultad:Int,anchura:Int, altura:Int, x:Int, y:Int, valor:Int, puntos:Int, conjuntos:Int):Unit = {
 		val pisados = initTableroAux(anchura*altura)
 	  val jewelsParaEliminar = analizarPosicion(tablero, pisados, anchura, altura, x, y,-50,-50, valor)
-		
-		/*if(jewelsParaEliminar!=Nil)
-		  printList(jewelsParaEliminar)
-		else
-		  println("Resultado no cumple")*/
 		  
 		if(jewelsParaEliminar._1 == Nil || tamañoLista(jewelsParaEliminar._1) < 3) {bucleJuego(tablero,anchura,altura,dificultad,seleccion,puntos,conjuntos)}
 		else {
-		  //println("ELIMINAR")
-		  //println("Antes de eliminar____________")
-		  //printTablero(tablero,0,altura-1,anchura,altura)
 			eliminarJewels(tablero,anchura,altura,dificultad,jewelsParaEliminar._1,puntos,conjuntos)
 		}
 	}
 	
-	//Funcion que se ocupa de intercambiar con la jewel indicada y realizar llamar al analisis manual
+	//Funcion que se ocupa de intercambiar con la jewel indicada y realizar la llamada al analisis manual
 	def intercambiarJewels(tablero:List[Int], pos1_x:Int, pos1_y:Int, direccion:Int, anchura:Int, altura:Int, puntos:Int, conjuntos:Int):Unit = {
 		direccion match {
 		//analisisManual recibe como tablero el resultante del swap
 		//Arriba, si no se sale del tablero lo hace
-			case 1 => { if(pos1_x + (pos1_y+1)*anchura < anchura*altura) {
+			case 1 => { if(pos1_x + (pos1_y+1)*anchura < anchura*altura && pos1_y+1 < altura) {
 				analisisManual(swap(tablero, pos1_x + pos1_y*anchura, pos1_x + (pos1_y+1)*anchura, tablero(pos1_x + pos1_y*anchura)), dificultad,anchura, altura, pos1_x, pos1_y+1, tablero(pos1_x + pos1_y*anchura),puntos,conjuntos)
 			}
 			}
 		//Abajo
-			case 2 => { if(pos1_x + (pos1_y-1)*anchura >= 0) {
+			case 2 => { if(pos1_x + (pos1_y-1)*anchura >= 0 && pos1_y-1 >= 0) {
 				analisisManual(swap(tablero, pos1_x + pos1_y*anchura, pos1_x + (pos1_y-1)*anchura, tablero(pos1_x + pos1_y*anchura)), dificultad,anchura, altura, pos1_x, pos1_y-1, tablero(pos1_x + pos1_y*anchura),puntos,conjuntos)
 			}
 			}
@@ -284,9 +252,16 @@ object jewels extends App {
 		}
 	}
 	
+	/**Revisa por cada jewel todos los movimientos posibles, escribiendo en un auxiliar el mejor de los movimientos (cantidad que elimina)
+	 * 		y en otro auxiliar el movimiento que debe hacer con la jewel analizada.
+	 * 
+	 * @param aux tablero auxiliar que guarda cuantas jewels se eliminan con su mejor movimiento
+	 * @param aux_dir tablero auxiliar que guarda la dirección hacia la que intercambiar para obtener el valor guardado en "aux" en la misma posición
+	 * @return tupla formada por ambos tableros auxiliares
+	 * 
+	 */
 	def analisisAutomaticoRec(tablero:List[Int], aux:List[Int],aux_dir:List[Int], dificultad:Int,anchura:Int, altura:Int, x:Int, y:Int):(List[Int],List[Int]) = {
 	  if(x+y*anchura < altura*anchura) {
-	    //println("AutomaticoRec x: " + x + " y: " + y)
   	  val pisados = initTableroAux(anchura*altura)
   	  
   	  val eliminados_arriba = analizarPosicion(swap(tablero, x + y*anchura, x + (y+1)*anchura, tablero(x + y*anchura)),pisados,anchura,altura,x,y+1,-50,-50,tablero(x+y*anchura))
@@ -295,39 +270,18 @@ object jewels extends App {
   	  val eliminados_izquierda = analizarPosicion(swap(tablero, x + y*anchura, x-1 + (y)*anchura, tablero(x + y*anchura)),pisados,anchura,altura,x-1,y,-50,-50,tablero(x+y*anchura))
   	  val lista = List(eliminados_arriba._1.size,eliminados_abajo._1.size,eliminados_izquierda._1.size,eliminados_derecha._1.size)
   	  
-  	  //println("Lista entera:")
-  	  //printList(lista)
-  	  //println("Tablero auxiliar rec")
-  	  //printTableroAux(aux,0,altura-1,anchura,altura)
-  	  //println("Tablero auxiliar direccion")
-  	  //printTableroAux(aux_dir,0,altura-1,anchura,altura)
-  	  //println("PosicionAnalisisRec: (" + x + "," + y + ") arriba: " + tamañoLista(eliminados_arriba._1) + " abajo: " + tamañoLista(eliminados_abajo._1) + " izquierda: " + tamañoLista(eliminados_izquierda._1) + " derecha: " + tamañoLista(eliminados_derecha._1))
-  	  
-  	  
   	  if(x < anchura-1){
   	    analisisAutomaticoRec(tablero,introducirElemento(lista.zipWithIndex.maxBy(_._1)._1, x+y*anchura, aux),introducirElemento(lista.zipWithIndex.maxBy(_._1)._2+1, x+y*anchura, aux_dir),dificultad,anchura,altura,x+1,y)
   	  }else{
   	    analisisAutomaticoRec(tablero,introducirElemento(lista.zipWithIndex.maxBy(_._1)._1, x+y*anchura, aux),introducirElemento(lista.zipWithIndex.maxBy(_._1)._2+1, x+y*anchura, aux_dir),dificultad,anchura,altura,0,y+1)
   	  }
     } else {
-	    //println("Tablero auxiliar FINAL VALORES")
-  	  //printTableroAux(aux,0,altura-1,anchura,altura)
-  	  //println("Tablero auxiliar FINAL DIR")
-  	  //printTableroAux(aux_dir,0,altura-1,anchura,altura)
 	    return (aux,aux_dir)
 	  }
 	}
 	
-	//Optiene el mejor movimiento y lo ejecuta
+	//Optiene el mejor movimiento de la tupla de auxiliares y lo ejecuta
 	def analizarMejorOpcion(aux_tuple:(List[Int],List[Int]), x:Int, y:Int, x_mejor:Int, y_mejor:Int, valor_mejor:Int, dir_mejor:Int, tablero:List[Int], anchura:Int, altura:Int, puntos:Int, conjuntos:Int):Unit = {
-	  //Se busca la mejor opcion
-	  //println("______Aux valores______")
-	  //printTableroAux(aux_tuple._1,0,altura-1,anchura,altura)
-	  //printList(aux_tuple._1)
-	  //println("______Aux direcciones______")
-	  //printList(aux_tuple._1)
-	  //printTableroAux(aux_tuple._2,0,altura-1,anchura,altura)
-	  //println("X: " + x + " Y: " + y + " X mejor: " + x_mejor + " Y mejor: " + y_mejor + " Dir mejor: " + dir_mejor + " Valor mejor: " + valor_mejor)
 	  if(x+y*anchura < altura*anchura) {
   	  if(x < anchura-1){
     	  if(aux_tuple._1(x+y*anchura)>=2 && aux_tuple._1(x+y*anchura) > valor_mejor){
@@ -342,20 +296,19 @@ object jewels extends App {
 	        analizarMejorOpcion(aux_tuple, 0, y+1, x_mejor, y_mejor, valor_mejor,dir_mejor,tablero,anchura,altura,puntos,conjuntos)
 	      }
   	  }
-	  }else{
-	    //Ya se ha obtenido la mejor opcion
-	    //println("Mejor -> x: " + x_mejor + " y: " + y_mejor + " direccion: " + dir_mejor)
+	  }else{  //Cuando se ha encontrado el mejor
 	     intercambiarJewels(tablero, x_mejor, y_mejor, dir_mejor, anchura, altura,puntos,conjuntos)
 	  }
 	}
 	
+	//Prepara y ejecuta el analisis recursivo automático
 	def analisisAutomatico(tablero:List[Int], dificultad:Int,anchura:Int, altura:Int, puntos:Int, conjuntos:Int):Unit = {
 	  val aux = initTableroAux(anchura*altura)
 	  val aux_dir = initTableroAux(anchura*altura)
-	  //printTablero(analisisAutomaticoRec(tablero, aux, dificultad, anchura, altura, 0, 0),0,altura-1,anchura,altura)
 	  analizarMejorOpcion(analisisAutomaticoRec(tablero, aux, aux_dir, dificultad, anchura, altura, 0, 0), 0, 0, 0, 0, 0, 4, tablero, anchura, altura, puntos, conjuntos)
 	}
 	
+	/*Bucle principal del juego*/
 	def bucleJuego(tablero:List[Int], anchura:Int, altura:Int, dificultad:Int, seleccion:Int, puntos:Int, conjuntos:Int):Unit = {
 	  println("Puntos: " + puntos)
 	  println("Numero de conjuntos eliminados: " + conjuntos)
@@ -363,7 +316,7 @@ object jewels extends App {
 	  println("________________________________")
 	  
 	  seleccion match {
-	    case 1 => {
+	    case 1 => {  //Automatico
 	      println("Elige una acción:\n   1.-Mejor Jugada\n   2.-Guardar Partida\n   3.-Cargar Partida\n   0.-Salir")
     	  val opcionElegida = scala.io.StdIn.readInt()
     	      
@@ -376,7 +329,7 @@ object jewels extends App {
     	     case _ => bucleJuego(tablero,anchura,altura,dificultad,seleccion,puntos,conjuntos)
     	  }
 	    }
-	    case 2 => {
+	    case 2 => {  //Manual
 	      println("Elige una acción:\n   1.-Intercambiar Jewel\n   2.-Guardar Partida\n   3.-Cargar Partida\n   0.-Salir")
 	      val opcionElegida = scala.io.StdIn.readInt()
 	      
