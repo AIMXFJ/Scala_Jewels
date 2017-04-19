@@ -6,6 +6,8 @@ import event._
 import java.awt.{ Color, Graphics2D }
 import scala.util.Random
 import javax.swing.JOptionPane
+import java.io._
+import scala.io.Source
 
 object TableroGrafico extends SimpleSwingApplication {
   //Imprime cualquier lista o variable valida para for each
@@ -295,6 +297,44 @@ object TableroGrafico extends SimpleSwingApplication {
 	  analizarMejorOpcion(analisisAutomaticoRec(tablero, aux, aux_dir, dificultad, anchura, altura, 0, 0), 0, 0, 0, 0, 0, 4, tablero, anchura, altura, puntos, conjuntos,canvas,labelPuntos,labelConjuntos)
 	}
 	
+		def guardar(tablero:List[Int], anchura:Int, altura:Int, dificultad:Int, seleccion:Int, puntos:Int, conjuntos:Int, canvas:Canvas, labelPuntos:Label, labelConjuntos:Label):Unit = {
+	  val ficheroTablero = new PrintWriter(new File("tablero.txt"))
+	  val ficheroAnchura = new PrintWriter(new File("anchura.txt"))
+	  val ficheroAltura = new PrintWriter(new File("altura.txt"))
+	  val ficheroDificultad = new PrintWriter(new File("dificultad.txt"))
+	  val ficheroSeleccion = new PrintWriter(new File("seleccion.txt"))
+	  val ficheroPuntos = new PrintWriter(new File("puntos.txt"))
+	  val ficheroConjuntos = new PrintWriter(new File("conjuntos.txt"))
+	  ficheroTablero.write(tablero.mkString(","))
+	  ficheroAnchura.write(anchura.toString())
+	  ficheroAltura.write(altura.toString())
+	  ficheroDificultad.write(dificultad.toString())
+	  ficheroSeleccion.write(seleccion.toString())
+	  ficheroPuntos.write(puntos.toString())
+	  ficheroConjuntos.write(conjuntos.toString())
+	  ficheroTablero.close
+	  ficheroAnchura.close
+	  ficheroAltura.close
+	  ficheroDificultad.close
+	  ficheroSeleccion.close
+	  ficheroPuntos.close
+	  ficheroConjuntos.close
+	  println("Datos guardados.")
+	  bucleJuego(tablero,anchura,altura,dificultad,seleccion,puntos,conjuntos, canvas,labelPuntos,labelConjuntos)
+	}
+	
+	def cargar(canvas:Canvas, labelPuntos:Label, labelConjuntos:Label):Unit = {
+	  val tablero = Source.fromFile("tablero.txt").getLines().toList.head.split(",").map(_.trim).toList.map(_.toInt)
+	  val anchura = Source.fromFile("anchura.txt").getLines().toList.head.toInt
+	  val altura = Source.fromFile("altura.txt").getLines().toList.head.toInt
+	  val dificultad = Source.fromFile("dificultad.txt").getLines().toList.head.toInt
+	  val seleccion = Source.fromFile("seleccion.txt").getLines().toList.head.toInt
+	  val puntos = Source.fromFile("puntos.txt").getLines().toList.head.toInt
+	  val conjuntos = Source.fromFile("conjuntos.txt").getLines().toList.head.toInt
+	  println("Partida Cargada.")
+	  bucleJuego(tablero,anchura,altura,dificultad,seleccion,puntos,conjuntos, canvas,labelPuntos,labelConjuntos)
+	}
+	
 	/*Bucle principal del juego, se actualiza la interfaz al principio de cada iteración*/
 	def bucleJuego(tablero:List[Int], anchura:Int, altura:Int, dificultad:Int, seleccion:Int, puntos:Int, conjuntos:Int, canvas:Canvas, labelPuntos:Label, labelConjuntos:Label):Unit = {
 	  canvas.jewels = tablero
@@ -309,8 +349,12 @@ object TableroGrafico extends SimpleSwingApplication {
     	  opcionElegida match {
     	    case 0 => System.exit(1)
     	     case 1 => analisisAutomatico(tablero, dificultad, anchura, altura,puntos,conjuntos,canvas,labelPuntos,labelConjuntos)
-    	     case 2 => {bucleJuego(tablero,anchura,altura,dificultad,seleccion,puntos,conjuntos,canvas,labelPuntos,labelConjuntos)}
-    	     case 3 => {bucleJuego(tablero,anchura,altura,dificultad,seleccion,puntos,conjuntos,canvas,labelPuntos,labelConjuntos)}
+    	     case 2 => {
+    	       println("Guardar Partida Actual")
+    	       guardar(tablero, anchura, altura, dificultad, seleccion, puntos, conjuntos,canvas,labelPuntos,labelConjuntos)}
+    	     case 3 => {
+    	       println("Cargar Partida Guardada")
+    	       cargar(canvas,labelPuntos,labelConjuntos)}
     	     case _ => bucleJuego(tablero,anchura,altura,dificultad,seleccion,puntos,conjuntos,canvas,labelPuntos,labelConjuntos)
     	  }
 	    }
@@ -338,11 +382,12 @@ object TableroGrafico extends SimpleSwingApplication {
     	      intercambiarJewels(tablero, x, y, direccion, anchura, altura, puntos, conjuntos,canvas,labelPuntos,labelConjuntos)
 	        }
 	        case 2 => {
-	          bucleJuego(tablero,anchura,altura,dificultad,seleccion,puntos,conjuntos,canvas,labelPuntos,labelConjuntos)
-	        }
-	        case 3 => {
-	          bucleJuego(tablero,anchura,altura,dificultad,seleccion,puntos,conjuntos,canvas,labelPuntos,labelConjuntos)
-	        }
+    	       println("Guardar Partida Actual")
+    	       guardar(tablero, anchura, altura, dificultad, seleccion, puntos, conjuntos,canvas,labelPuntos,labelConjuntos)}
+    	     case 3 => {
+    	       println("Cargar Partida Guardada")
+    	       cargar(canvas,labelPuntos,labelConjuntos)
+    	       }
 	      }
 	    }
 	    case _ => bucleJuego(tablero,anchura,altura,dificultad,seleccion,puntos,conjuntos,canvas,labelPuntos,labelConjuntos)

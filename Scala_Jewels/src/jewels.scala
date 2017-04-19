@@ -2,6 +2,8 @@
 
 object jewels extends App {
   import util.Random
+  import java.io._
+	import scala.io.Source
   
   //Imprime cualquier lista o variable valida para for each
   def printList(args:List[Int]):Unit = {
@@ -308,6 +310,44 @@ object jewels extends App {
 	  analizarMejorOpcion(analisisAutomaticoRec(tablero, aux, aux_dir, dificultad, anchura, altura, 0, 0), 0, 0, 0, 0, 0, 4, tablero, anchura, altura, puntos, conjuntos)
 	}
 	
+		def guardar(tablero:List[Int], anchura:Int, altura:Int, dificultad:Int, seleccion:Int, puntos:Int, conjuntos:Int):Unit = {
+	  val ficheroTablero = new PrintWriter(new File("tablero.txt"))
+	  val ficheroAnchura = new PrintWriter(new File("anchura.txt"))
+	  val ficheroAltura = new PrintWriter(new File("altura.txt"))
+	  val ficheroDificultad = new PrintWriter(new File("dificultad.txt"))
+	  val ficheroSeleccion = new PrintWriter(new File("seleccion.txt"))
+	  val ficheroPuntos = new PrintWriter(new File("puntos.txt"))
+	  val ficheroConjuntos = new PrintWriter(new File("conjuntos.txt"))
+	  ficheroTablero.write(tablero.mkString(","))
+	  ficheroAnchura.write(anchura.toString())
+	  ficheroAltura.write(altura.toString())
+	  ficheroDificultad.write(dificultad.toString())
+	  ficheroSeleccion.write(seleccion.toString())
+	  ficheroPuntos.write(puntos.toString())
+	  ficheroConjuntos.write(conjuntos.toString())
+	  ficheroTablero.close
+	  ficheroAnchura.close
+	  ficheroAltura.close
+	  ficheroDificultad.close
+	  ficheroSeleccion.close
+	  ficheroPuntos.close
+	  ficheroConjuntos.close
+	  println("Datos guardados.")
+	  bucleJuego(tablero,anchura,altura,dificultad,seleccion,puntos,conjuntos)
+	}
+	
+	def cargar():Unit = {
+	  val tablero = Source.fromFile("tablero.txt").getLines().toList.head.split(",").map(_.trim).toList.map(_.toInt)
+	  val anchura = Source.fromFile("anchura.txt").getLines().toList.head.toInt
+	  val altura = Source.fromFile("altura.txt").getLines().toList.head.toInt
+	  val dificultad = Source.fromFile("dificultad.txt").getLines().toList.head.toInt
+	  val seleccion = Source.fromFile("seleccion.txt").getLines().toList.head.toInt
+	  val puntos = Source.fromFile("puntos.txt").getLines().toList.head.toInt
+	  val conjuntos = Source.fromFile("conjuntos.txt").getLines().toList.head.toInt
+	  println("Partida Cargada.")
+	  bucleJuego(tablero,anchura,altura,dificultad,seleccion,puntos,conjuntos)
+	}
+	
 	/*Bucle principal del juego*/
 	def bucleJuego(tablero:List[Int], anchura:Int, altura:Int, dificultad:Int, seleccion:Int, puntos:Int, conjuntos:Int):Unit = {
 	  println("Puntos: " + puntos)
@@ -320,20 +360,19 @@ object jewels extends App {
 	      println("Elige una acción:\n   1.-Mejor Jugada\n   2.-Guardar Partida\n   3.-Cargar Partida\n   0.-Salir")
     	  val opcionElegida = scala.io.StdIn.readInt()
     	      
-    	  //Opciones 2, 3 no hacen nada de momento, solo continuan el bucle del juego, 0 sale del programa
     	  opcionElegida match {
     	    case 0 => System.exit(1)
     	     case 1 => analisisAutomatico(tablero, dificultad, anchura, altura,puntos,conjuntos)
-    	     case 2 => {bucleJuego(tablero,anchura,altura,dificultad,seleccion,puntos,conjuntos)}
-    	     case 3 => {bucleJuego(tablero,anchura,altura,dificultad,seleccion,puntos,conjuntos)}
-    	     case _ => bucleJuego(tablero,anchura,altura,dificultad,seleccion,puntos,conjuntos)
+    	     case 2 => {println("Guardar Partida Actual")
+	          guardar(tablero, anchura, altura, dificultad, seleccion, puntos, conjuntos)}
+    	     case 3 => {println("Cargar Partida Guardada")
+	          cargar()}case _ => bucleJuego(tablero,anchura,altura,dificultad,seleccion,puntos,conjuntos)
     	  }
 	    }
 	    case 2 => {  //Manual
 	      println("Elige una acción:\n   1.-Intercambiar Jewel\n   2.-Guardar Partida\n   3.-Cargar Partida\n   0.-Salir")
 	      val opcionElegida = scala.io.StdIn.readInt()
 	      
-	      //Opciones 2, 3 no hacen nada de momento, solo continuan el bucle del juego, 0 sale del programa
 	      opcionElegida match {
 	        case 0 => System.exit(1)
 	        case 1 => {  //Intercambio de la jewel a elegir
@@ -356,10 +395,13 @@ object jewels extends App {
     	      intercambiarJewels(tablero, x, y, direccion, anchura, altura, puntos, conjuntos)
 	        }
 	        case 2 => {
-	          bucleJuego(tablero,anchura,altura,dificultad,seleccion,puntos,conjuntos)
+	          println("Guardar Partida Actual")
+	          guardar(tablero, anchura, altura, dificultad, seleccion, puntos, conjuntos)
+	          
 	        }
 	        case 3 => {
-	          bucleJuego(tablero,anchura,altura,dificultad,seleccion,puntos,conjuntos)
+	          println("Cargar Partida Guardada")
+	          cargar()
 	        }
 	      }
 	    }
