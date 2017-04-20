@@ -228,7 +228,7 @@ object TableroGrafico extends SimpleSwingApplication {
 			}
 		//Izquierda
 			case 3 => { if(pos1_x-1 + (pos1_y)*anchura < anchura*altura) { 
-			  analisisManual(swap(tablero, pos1_x + pos1_y*anchura, pos1_x-1 + (pos1_y)*anchura, tablero(pos1_x + pos1_y*anchura)), dificultad,anchura, altura, pos1_x+1, pos1_y, tablero(pos1_x + pos1_y*anchura),puntos,conjuntos,canvas,labelPuntos,labelConjuntos)
+			  analisisManual(swap(tablero, pos1_x + pos1_y*anchura, pos1_x-1 + (pos1_y)*anchura, tablero(pos1_x + pos1_y*anchura)), dificultad,anchura, altura, pos1_x-1, pos1_y, tablero(pos1_x + pos1_y*anchura),puntos,conjuntos,canvas,labelPuntos,labelConjuntos)
 			}
 			}
 		//Derecha
@@ -286,7 +286,7 @@ object TableroGrafico extends SimpleSwingApplication {
   	  }
 	  }else{  //Cuando acaba de revisar
 	    //Ya se ha obtenido la mejor opcion
-	     intercambiarJewels(tablero, x_mejor, y_mejor, dir_mejor, anchura, altura,puntos,conjuntos,canvas,labelPuntos,labelConjuntos)
+	    intercambiarJewels(tablero, x_mejor, y_mejor, dir_mejor, anchura, altura,puntos,conjuntos,canvas,labelPuntos,labelConjuntos)
 	  }
 	}
 	
@@ -297,7 +297,8 @@ object TableroGrafico extends SimpleSwingApplication {
 	  analizarMejorOpcion(analisisAutomaticoRec(tablero, aux, aux_dir, dificultad, anchura, altura, 0, 0), 0, 0, 0, 0, 0, 4, tablero, anchura, altura, puntos, conjuntos,canvas,labelPuntos,labelConjuntos)
 	}
 	
-		def guardar(tablero:List[Int], anchura:Int, altura:Int, dificultad:Int, seleccion:Int, puntos:Int, conjuntos:Int, canvas:Canvas, labelPuntos:Label, labelConjuntos:Label):Unit = {
+	/*Guarda los datos de la partida actual en archivos separados*/
+	def guardar(tablero:List[Int], anchura:Int, altura:Int, dificultad:Int, seleccion:Int, puntos:Int, conjuntos:Int, canvas:Canvas, labelPuntos:Label, labelConjuntos:Label):Unit = {
 	  val ficheroTablero = new PrintWriter(new File("tablero.txt"))
 	  val ficheroAnchura = new PrintWriter(new File("anchura.txt"))
 	  val ficheroAltura = new PrintWriter(new File("altura.txt"))
@@ -323,6 +324,7 @@ object TableroGrafico extends SimpleSwingApplication {
 	  bucleJuego(tablero,anchura,altura,dificultad,seleccion,puntos,conjuntos, canvas,labelPuntos,labelConjuntos)
 	}
 	
+	/*Carga los datos y actualiza el estado actual del juego con los mismos.*/
 	def cargar(canvas:Canvas, labelPuntos:Label, labelConjuntos:Label):Unit = {
 	  val tablero = Source.fromFile("tablero.txt").getLines().toList.head.split(",").map(_.trim).toList.map(_.toInt)
 	  val anchura = Source.fromFile("anchura.txt").getLines().toList.head.toInt

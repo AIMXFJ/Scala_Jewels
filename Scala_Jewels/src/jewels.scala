@@ -174,17 +174,6 @@ object jewels extends App {
 	  }
 	}
 	
-	//Baja las columnas al eliminar horizontalmente. Función antigua, no se usa actualmente
-	/*def moverColumnas(tablero:List[Int], anchura:Int, altura:Int, init_y:Int, x:Int, y:Int, dificultad:Int, jewelsParaEliminar:List[Int]):List[Int] = {
-	  if(y+1<altura){
-	    moverColumnas(swap(tablero, x+y*anchura,x+(y+1)*anchura,tablero(x+y*anchura)),anchura,altura,init_y,x,y+1,dificultad,jewelsParaEliminar)
-	  }else if(!jewelsParaEliminar.tail.tail.isEmpty){
-	    moverColumnas(introducirElemento(numRandom(dificultad), x+y*anchura, tablero),anchura,altura,init_y,jewelsParaEliminar.tail.tail(0),init_y,dificultad,jewelsParaEliminar.tail.tail)
-	  }else{
-	    introducirElemento(numRandom(dificultad), x+y*anchura, tablero)
-	  }
-	}*/
-	
 	/**Se encarga de dividir las jewels a eliminar en grupos eliminables verticalmente, en caso de que sea un grupo horizontal
 	 * 		se generarán tantos grupos como jewels lo formen, siendo cada grupo formado por una jewel eliminada como si fuera un grupo
 	 * 		vertical, permitiendo eliminar cualquier tipo de grupo de forma generalizada
@@ -310,7 +299,8 @@ object jewels extends App {
 	  analizarMejorOpcion(analisisAutomaticoRec(tablero, aux, aux_dir, dificultad, anchura, altura, 0, 0), 0, 0, 0, 0, 0, 4, tablero, anchura, altura, puntos, conjuntos)
 	}
 	
-		def guardar(tablero:List[Int], anchura:Int, altura:Int, dificultad:Int, seleccion:Int, puntos:Int, conjuntos:Int):Unit = {
+	/*Guarda los datos de la partida actual en archivos separados*/
+	def guardar(tablero:List[Int], anchura:Int, altura:Int, dificultad:Int, seleccion:Int, puntos:Int, conjuntos:Int):Unit = {
 	  val ficheroTablero = new PrintWriter(new File("tablero.txt"))
 	  val ficheroAnchura = new PrintWriter(new File("anchura.txt"))
 	  val ficheroAltura = new PrintWriter(new File("altura.txt"))
@@ -336,6 +326,7 @@ object jewels extends App {
 	  bucleJuego(tablero,anchura,altura,dificultad,seleccion,puntos,conjuntos)
 	}
 	
+	/*Carga los datos y actualiza el estado actual del juego con los mismos.*/
 	def cargar():Unit = {
 	  val tablero = Source.fromFile("tablero.txt").getLines().toList.head.split(",").map(_.trim).toList.map(_.toInt)
 	  val anchura = Source.fromFile("anchura.txt").getLines().toList.head.toInt
